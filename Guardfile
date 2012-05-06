@@ -8,6 +8,7 @@ group :unit do
 
     # Src files
     watch(%r'^lib/(.+)\.rb$') {|m| "test/unit/#{m[1]}_test.rb"}
+    watch(%r'^lib/ruby_ext/(.+)\.rb$') {|m| "test/unit/#{m[1]}_test.rb"}
 
     # Each test
     watch(%r'^test/unit/.+_test\.rb$')
