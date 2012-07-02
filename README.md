@@ -1,2 +1,2 @@
-[![Build Status](https://secure.travis-ci.org/japgolly/ruby_ext.png?branch=master)](http://travis-ci.org/japgolly/ruby_ext) [![Dependency Status](https://gemnasium.com/japgolly/ruby_ext.png)](https://gemnasium.com/japgolly/ruby_ext)
+[![Build Status](https://secure.travis-ci.org/japgolly/golly-utils.png?branch=master)](http://travis-ci.org/japgolly/golly-utils) [![Dependency Status](https://gemnasium.com/japgolly/golly-utils.png)](https://gemnasium.com/japgolly/golly-utils)
 
