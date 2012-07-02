@@ -1,5 +1,7 @@
 source :rubygems
 
+gemspec
+
 # Load Gemfile.corvid
 eval File.read(__FILE__ + '.corvid')
 

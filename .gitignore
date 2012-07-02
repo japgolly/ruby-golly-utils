@@ -15,3 +15,5 @@
 .idea
 target
 sloccount.sc
+
+*.gem
