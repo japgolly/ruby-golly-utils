@@ -1,12 +1,20 @@
 module GollyUtils
+
+  # An object that delegates method calls to eligible delegate objects.
   class Delegator
     attr_reader :delegate_to
 
-    # Options:
-    #   :cache             => true (deault), false
-    #   :delegate_to       => :all, :first (default)
-    #   :method_whitelist  => String, symbol, regex, or array of above representing the only method_whitelist allowed during delegation.
-    #   :method_blacklist  => String, symbol, regex, or array of above representing method_whitelist not allowed during delegation.
+    # @overload initialize(*delegates, options={})
+    #   @param [Object] delegates Objects that method calls may be delegated to.
+    #   @param [Hash] options
+    #   @option options [true,false] :cache (true) Whether or not to maintain a cache of which delegate objects can
+    #       respond to each method call.
+    #   @option options [:first,:all] :delegate_to (:first) When multiple delegates can respond to a method call, this
+    #       setting determines which object(s) are delegated to.
+    #   @option options [String, Symbol, Regexp, Array] :method_whitelist Method name matcher(s) that specify which
+    #       methods are allowed to be delegated.
+    #   @option options [String, Symbol, Regexp, Array] :method_blacklist Method name matcher(s) that specify methods
+    #       that are not allowed to be delegated.
     def initialize(*args)
       options= args.last.kind_of?(Hash) ? args.pop.clone : {}
       @original_options= options
