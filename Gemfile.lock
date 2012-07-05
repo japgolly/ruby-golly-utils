@@ -1,12 +1,13 @@
+GIT
+  remote: git://github.com/japgolly/corvid.git
+  revision: b4bd43588c25b3496c703f5b31a212f35d887de9
+  specs:
+    corvid (0.0.1)
+
 PATH
   remote: .
   specs:
     golly-utils (0.0.1)
-
-PATH
-  remote: /home/golly/projects/corvid
-  specs:
-    corvid (0.0.1)
 
 GEM
   remote: http://rubygems.org/
