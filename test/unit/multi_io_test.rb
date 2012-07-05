@@ -9,7 +9,7 @@ class MultiIOTest < MiniTest::Unit::TestCase
     a= StringIO.new
     b= StringIO.new
     a.write 'a_'
-    m= MultiIO.new(a,b)
+    m= GollyUtils::MultiIO.new(a,b)
     m.write 'hehe'
     [a,b].each &:rewind
     assert_equal 'a_hehe', a.read
