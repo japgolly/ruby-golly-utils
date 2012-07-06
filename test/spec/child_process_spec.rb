@@ -2,7 +2,7 @@
 require_relative '../bootstrap/spec'
 require 'tmpdir'
 require 'golly-utils/child_process'
-require 'golly-utils/test/rspec/within_time'
+require 'golly-utils/test/spec/within_time'
 
 describe GollyUtils::ChildProcess do
   after :each do
