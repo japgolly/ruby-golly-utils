@@ -8,10 +8,10 @@ class Class
   # Returns a list of classes that extend this class, directly or indirectly (as in subclasses of subclasses).
   #
   # @return [Array<Class>]
-  def subclasses
+  def subclasses(include_subclassed_nodes = true)
     @subclasses ||= []
-    @subclasses.inject( [] ) do |list, subclass|
-      list.push(subclass, *subclass.subclasses)
-    end
+    classes= @subclasses.inject( [] ) {|list, subclass| list.push subclass, *subclass.subclasses }
+    classes.reject! {|c| classes.any?{|i| c != i and c.subclasses.include?(i) }} unless include_subclassed_nodes
+    classes
   end
 end
