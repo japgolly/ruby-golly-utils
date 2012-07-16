@@ -17,6 +17,11 @@ module GollyUtils
       def define_callbacks(*callbacks)
         callbacks.each do |name|
           name= _norm_callback_key(name)
+
+          if self.methods.include?(name.to_sym)
+            raise "Can't create callback with name '#{name}'. A method with that name already exists."
+          end
+
           _callbacks[name] ||= {}
           class_eval <<-EOB
             def self.#{name}(&block)

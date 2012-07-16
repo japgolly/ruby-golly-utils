@@ -60,4 +60,17 @@ class CallbacksTest < MiniTest::Unit::TestCase
   end
   def test_everything; assert_equal [7,1,666,100,60,50], Sweet.run; end
 
+  class Fail < Base
+    def self.what; 135 end
+  end
+  def test_callbacks_dont_overwrite_class_methods
+    Fail.send :define_callback, :this_should_work
+    assert_equal 135, Fail.what
+    Fail.send :define_callback, :what
+    flunk 'Exception expected. Callbacks are supposed to raise an error a method with the callback name already exists.'
+  rescue => e
+    assert e.to_s['what'], "Error message doesn't include the conflicting method/callback name.\nErrMsg: #{e}"
+    assert_equal 135, Fail.what
+  end
+
 end
