@@ -11,8 +11,6 @@ Gem::Specification.new do |gem|
   gem.email         = ["japgolly@gmail.com"]
   gem.homepage      = "https://github.com/japgolly/golly-utils"
 
-  #gem.add_development_dependency 'corvid'
-
   gem.files         = File.exists?('.git') ? `git ls-files`.split($\) : Dir['*']
   gem.require_paths = %w[lib]
   gem.test_files    = gem.files.grep(/^test\//)
