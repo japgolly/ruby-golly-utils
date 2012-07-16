@@ -8,6 +8,7 @@ To perform a release:
 * Ensure no uncommitted changes.
 * `gem build golly-utils.gemspec`
 * `gem push golly-utils-x.x.x.gem`
+* `git tag -s x.x.x`
 * Update `version.rb`
 * Commit
 
