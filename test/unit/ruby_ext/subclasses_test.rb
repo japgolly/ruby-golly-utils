@@ -15,10 +15,10 @@ class SubclassesTest < MiniTest::Unit::TestCase
   end
 
   def test_all_subclasses
-    assert_arrays [B,C,B1,B2], A.subclasses
+    assert_arrays [B,C,B1,B2], A.subclasses(true)
   end
 
   def test_leaf_nodes_only
-    assert_arrays [C,B1,B2], A.subclasses(false)
+    assert_arrays [C,B1,B2], A.subclasses
   end
 end
