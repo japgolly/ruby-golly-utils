@@ -7,7 +7,7 @@ GIT
 PATH
   remote: .
   specs:
-    golly-utils (0.0.1)
+    golly-utils (0.0.2)
 
 GEM
   remote: http://rubygems.org/
