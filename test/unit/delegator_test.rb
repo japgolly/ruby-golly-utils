@@ -8,6 +8,10 @@ class DelegatorTest < MiniTest::Unit::TestCase
     def a; 1; end
     def c; 10; end
     def add(a,b,c) a+b+c end
+    protected
+    def prot; 666; end
+    private
+    def pri; -1; end
   end
 
   class B
@@ -95,5 +99,18 @@ class DelegatorTest < MiniTest::Unit::TestCase
     assert_raises(NoMethodError){ d.a }
     assert_raises(NoMethodError){ d.b }
     assert_raises(NoMethodError){ d.add }
+  end
+
+  def test_protected_methods_not_allowed_by_default
+    assert_raises(NoMethodError){ nd(na).prot }
+  end
+
+  def test_protected_methods_allowed_when_enabled
+    assert_equal 666, nd(na, allow_protected: true).prot
+  end
+
+  def test_private_methods_not_allowed
+    assert_raises(NoMethodError){ nd(na).pri }
+    assert_raises(NoMethodError){ nd(na, allow_protected: true).pri }
   end
 end

@@ -7,6 +7,8 @@ module GollyUtils
     # @overload initialize(*delegates, options={})
     #   @param [Object] delegates Objects that method calls may be delegated to.
     #   @param [Hash] options
+    #   @option options [true,false] :allow_protected (false) Whether or not to allow calls to protected methods in
+    #       delegates.
     #   @option options [true,false] :cache (true) Whether or not to maintain a cache of which delegate objects can
     #       respond to each method call.
     #   @option options [:first,:all] :delegate_to (:first) When multiple delegates can respond to a method call, this
@@ -22,6 +24,7 @@ module GollyUtils
       @delegates= args
       @delegate_to= options[:delegate_to] || :first
       @cache= {} unless options.has_key?(:cache) && !options[:cache]
+      @allow_protected= options[:allow_protected]
       parse_method_delegation_option options, :method_whitelist
       parse_method_delegation_option options, :method_blacklist
     end
@@ -35,9 +38,9 @@ module GollyUtils
 
       case delegate_to
       when :first
-        matches[0].public_send(method,*args)
+        delegate_call matches[0], method, args
       when :all
-        matches.map{|m| m.public_send(method,*args)}
+        matches.map{|m| delegate_call m, method, args }
       else
         raise "Don't know how to respond to :delegate_to value of #{delegate_to.inspect}"
       end
@@ -48,6 +51,14 @@ module GollyUtils
     end
 
     private
+
+    def delegate_call(target, method, args)
+      if @allow_protected and target.protected_methods.include?(method)
+        target.send method, *args
+      else
+        target.public_send method, *args
+      end
+    end
 
     def parse_method_delegation_option(options, name)
       if values= options[name]
