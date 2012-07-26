@@ -10,5 +10,6 @@ To perform a release:
 * `gem push golly-utils-x.x.x.gem`
 * `git tag -s x.x.x`
 * Update `version.rb`
+* `bundle install`
 * Commit
 
