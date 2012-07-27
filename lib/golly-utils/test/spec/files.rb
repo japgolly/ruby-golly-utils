@@ -89,7 +89,7 @@ module GollyUtils
           dir= File.expand_path('..',@tgt).sub(Dir.pwd+'/','')
           if Dir.exists? dir
             Dir.chdir(dir) {
-              dirs= Dir.glob('*',File::FNM_DOTMATCH).select{|f| File.directory? f }.sort
+              dirs= Dir.glob('*',File::FNM_DOTMATCH).select{|f| File.directory? f }.sort - %w[. ..]
               indir= dir == '.' ? '' : " in #{dir}"
               "#{msg}\nDirs found#{indir}: #{dirs.join '  '}"
             }
