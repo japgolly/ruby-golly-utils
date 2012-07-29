@@ -29,7 +29,7 @@ group :spec do
   guard 'rspec', binstubs: true, spec_paths: ['test/spec'], cli: rspec_options, all_on_start: false, all_after_pass: false do
 
     # Src files
-    watch(%r'^lib/(.+)\.rb$') {|m| "test/spec/#{m[1]}_spec.rb"}
+    watch(%r'^lib/golly-utils/(.+)\.rb$') {|m| "test/spec/#{m[1]}_spec.rb"}
 
     # Each spec
     watch(%r'^test/spec/.+_spec\.rb$')
