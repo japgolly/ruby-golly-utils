@@ -3,7 +3,7 @@ require File.expand_path('../lib/golly-utils/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.name          = "golly-utils"
-  gem.version       = GollyUtils::VERSION
+  gem.version       = GollyUtils::VERSION.dup
   gem.date          = Date.today.to_s
   gem.summary       = %q{Golly's Utils: Reusable Ruby utility code.}
   gem.description   = %q{This contains a bunch of shared, utility code that has no external dependencies apart from Ruby stdlib.}
