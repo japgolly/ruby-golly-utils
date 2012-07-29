@@ -1,4 +1,6 @@
-module TestHelpers
+require 'golly-utils/testing/rspec/base'
+
+module GollyUtils::Testing::Helpers
 
   # @example
   #   within(5).seconds{ File.exists?(f).should == true }
@@ -53,4 +55,5 @@ module TestHelpers
       end
     end
   end
+
 end
