@@ -1,4 +1,4 @@
-require 'golly-utils/test/helpers/files'
+require 'golly-utils/testing/helpers/files'
 
 module GollyUtils
   module TestHelpers

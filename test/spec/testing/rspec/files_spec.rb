@@ -1,6 +1,6 @@
 # encoding: utf-8
 require_relative '../../../bootstrap/spec'
-require 'golly-utils/test/rspec/files'
+require 'golly-utils/testing/rspec/files'
 
 TMP_TEST_FILE= '.rubbish.tmp'
 
