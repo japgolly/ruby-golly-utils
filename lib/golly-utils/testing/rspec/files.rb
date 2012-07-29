@@ -25,7 +25,7 @@ module GollyUtils::Testing::Helpers::ClassMethods
     SELF.class_variable_set block_name, block
     eval <<-EOB
       before(:all){
-        @old_dir,@tmp_dir = inside_empty_dir
+        inside_empty_dir
         block= ::#{SELF}.class_variable_get(:"#{block_name}")
         instance_exec &block
       }

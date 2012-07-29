@@ -19,8 +19,7 @@ module GollyUtils::Testing::Helpers
   #   @return The result of yielding.
   # @overload inside_empty_dir
   #   When no block is given the current directory is *not* restored and the temp directory *not* deleted.
-  #   @return [Array<String>] Two strings respectively: the current-directory beforing entering the temp dir, and the
-  #     newly-created temp dir.
+  #   @return [String] The newly-created temp dir.
   def inside_empty_dir
     if block_given?
       Dir.mktmpdir {|dir|
@@ -29,27 +28,33 @@ module GollyUtils::Testing::Helpers
         }
       }
     else
-      dir= Dir.mktmpdir
-      old_dir= Dir.pwd
-      Dir.chdir dir
-      [old_dir,dir]
+      x= {}
+      x[:old_dir]= Dir.pwd
+      x[:tmp_dir]= Dir.mktmpdir
+      Dir.chdir x[:tmp_dir]
+      (@tmp_dir_stack ||= [])<< x
+      x[:tmp_dir]
     end
   end
 
   # To be used in conjunction with {#inside_empty_dir}.
   #
   # @example
-  #   @old_dir,@tmp_dir = inside_empty_dir
+  #   inside_empty_dir
   #   begin
   #     # Do stuff in empty dir
   #   ensure
   #     step_out_of_tmp_dir
   #   end
+  #
+  # @return [nil]
   def step_out_of_tmp_dir
-    # TODO Dumb - change inside_empty_dir() to store old/tmp smarter
-    Dir.chdir @old_dir if @old_dir
-    FileUtils.rm_rf @tmp_dir if @tmp_dir
-    @old_dir= @tmp_dir= nil
+    if @tmp_dir_stack
+      x= @tmp_dir_stack.pop
+      Dir.chdir x[:old_dir]
+      FileUtils.rm_rf x[:tmp_dir]
+    end
+    nil
   end
 
   # Recursively gets a list of all files.
