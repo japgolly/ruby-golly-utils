@@ -2,20 +2,27 @@ require 'golly-utils/testing/rspec/base'
 
 module GollyUtils::Testing::Helpers
 
-  # @example
-  #   within(5).seconds{ File.exists?(f).should == true }
-  # @see WithinTime
-  def within(timeout)
-    WithinTime.new(timeout)
-  end
-
   # Re-runs a given block until it:
   #
   # * indicates success by returning `true`
   # * fails by not returning `true` within a given time period.
   #
+  # @example
+  #   within(5).seconds{ 'Gemfile'.should exist_as_a_file }
+  #
+  # @param [Numeric] timeout The maximum number of time units (to be specified after a call to this) to wait for a
+  #   condition to be met.
+  # @see WithinTime
+  def within(timeout)
+    WithinTime.new(timeout)
+  end
+
   # @see #within
   class WithinTime
+
+    # @param [Numeric] timeout The maximum number of time units (to be specified after a call to this) to wait for a
+    #   condition to be met.
+    # @param [Numeric] sleep_time The number of seconds to wait after an unsuccessful attempt before trying again.
     def initialize(timeout, sleep_time=0.1)
       timeout= timeout.to_f
       raise unless timeout > 0
