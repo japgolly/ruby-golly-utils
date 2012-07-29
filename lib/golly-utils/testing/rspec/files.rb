@@ -3,6 +3,9 @@ require 'golly-utils/testing/helpers/files'
 
 module GollyUtils::Testing::Helpers::ClassMethods
 
+  # Runs each RSpec example in a new, empty directory.
+  #
+  # Old directories are deleted at the end of each example, and the original current-directory restored.
   def run_each_in_empty_dir
     eval <<-EOB
       around :each do |ex|
@@ -11,6 +14,9 @@ module GollyUtils::Testing::Helpers::ClassMethods
     EOB
   end
 
+  # Runs all RSpec examples (in the current context) in a new, empty directory.
+  #
+  # The directory is deleted after all examples have run, and the original current-directory restored.
   def run_all_in_empty_dir(&block)
     block ||= Proc.new{}
     @@around_all_in_empty_dir_count ||= 0
@@ -33,6 +39,7 @@ module GollyUtils::Testing::RSpecMatchers
 
   #-----------------------------------------------------------------------------------------------------------------
 
+  # @!visibility private
   class ExistAsFile
     def matches?(tgt)
       @tgt= tgt
@@ -62,6 +69,13 @@ module GollyUtils::Testing::RSpecMatchers
     end
   end
 
+  # Passes if a file exists (relative to the current directory) with a name specified by the target string.
+  #
+  # Note: This only passes if a file is found; a directory with the same name will fail.
+  #
+  # @example
+  #   'Gemfile'.should exist_as_a_file
+  #   '/tmp/stuff'.should_not exist_as_a_file
   def exist_as_a_file
     ExistAsFile.new
   end
@@ -69,6 +83,7 @@ module GollyUtils::Testing::RSpecMatchers
 
   #-----------------------------------------------------------------------------------------------------------------
 
+  # @!visibility private
   class ExistAsDir
     def matches?(tgt)
       @tgt= tgt
@@ -98,6 +113,11 @@ module GollyUtils::Testing::RSpecMatchers
     end
   end
 
+  # Passes if a directory exists (relative to the current directory) with a name specified by the target string.
+  #
+  # @example
+  #   'lib'.should exist_as_a_dir
+  #   'cache/z01'.should_not exist_as_a_dir
   def exist_as_a_dir
     ExistAsDir.new
   end

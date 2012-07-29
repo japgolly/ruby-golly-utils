@@ -1,8 +1,58 @@
 require 'golly-utils/ruby_ext/deep_dup'
 
 module GollyUtils
+  # A very simple callback mechanism for use within a single class heirarchy.
+  #
+  # It is primiarily meant to be used as a replacement for method overriding in external subclasses; the problem with
+  # that approach being a) it's unclear with methods are required/overrides, and b) if the wrong method name is used
+  # there is no early feedback - the erronously named method will simply never be invoked and the super-method will not
+  # receive the intended modification.
+  #
+  # It allows:
+  #
+  # 1. A class to define named callback point.
+  # 2. Subclasses to supply callbacks to specific points by name.
+  # 3. Ability to run all callbacks for a given callback point.
+  #
+  # Unlike Rails' callbacks implementation, this deliberately doesn't provide before/after/around functionality, nor a
+  # chain-like structure where the return value of one callback can affect the determinism of other callbacks being
+  # invoked.
+  #
+  # ## Usage
+  #
+  # * In your superclass:
+  #   1. Include {Callbacks}.
+  #   2. Use {ClassMethods#define_callbacks} in the class definition.
+  #   3. Call {InstanceMethods#run_callbacks} in your code.
+  # * In subclasses:
+  #   1. Supply a callback by declaring the callback name in the class definition, followed by a block of code.
+  #
+  # @example
+  #
+  #   class Engine
+  #     include GollyUtils::Callbacks
+  #
+  #     define_callback :start
+  #
+  #     def start
+  #       puts "About to start..."
+  #       run_callbacks :start
+  #       puts "Running."
+  #     end
+  #   end
+  #
+  #   class CustomEngine < Engine
+  #     start do
+  #       puts "---> STARTING!!!"
+  #     end
+  #   end
+  #
+  #   CustomEngine.new.start    # => About to start...
+  #                             # => ---> STARTING!!!
+  #                             # => Running.
   module Callbacks
 
+    # @!visibility private
     def self.included(base)
       base.send :include, InstanceMethods
       base.send :include, InstanceAndClassMethods
@@ -14,6 +64,13 @@ module GollyUtils
 
     module ClassMethods
 
+      # Create one or more callback points for this class and its children.
+      #
+      # @param [Array<String, Symbol>] callbacks The callback name(s).
+      # @return [void]
+      # @raise If the callback has already been defined, or a method with that name already exists.
+      # @see Callbacks
+      # @see InstanceMethods#run_callbacks
       def define_callbacks(*callbacks)
         callbacks.each do |name|
           name= _norm_callback_key(name)
@@ -63,6 +120,7 @@ module GollyUtils
 
     #-------------------------------------------------------------------------------------------------------------------
 
+    # @!visibility private
     module InstanceAndClassMethods
 
       private
@@ -76,6 +134,13 @@ module GollyUtils
 
     module InstanceMethods
 
+      # Run all callbacks provided for one or more callback points.
+      #
+      # @param [Array<String, Symbol>] callbacks The callback name(s).
+      # @return [void]
+      # @raise If one of the provided callback names hasn't been declared for this class.
+      # @see Callbacks
+      # @see ClassMethods#define_callbacks
       def run_callbacks(*callbacks)
         callbacks.each do |name|
           name= _norm_callback_key(name)

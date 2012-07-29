@@ -2,15 +2,33 @@ module GollyUtils
 
   # Start, manage, and stop a child process.
   class ChildProcess
-    attr_accessor :start_command, :quiet, :spawn_options, :env
-    attr_reader :pid
+
+    # The shell command to start the child process.
+    # @return [String]
+    attr_accessor :start_command
+
+    # Whether to print startup/shutdown info to stdout, and whether or not to the stdout and stderr streams of the child
+    # process (unless explictly redirected via :spawn_options)
+    # @return [Boolean]
+    attr_accessor :quiet
     alias :quiet? :quiet
 
-    # @option options [String] :start_command The shell command to start the child process.
-    # @option options [Hash] :env Environment variables to set in the child process.
-    # @option options [Boolean] :quiet (false) Whether to print startup/shutdown info to stdout, and whether or not to
-    #     the stdout and stderr streams of the child process (unless explictly redirected via :spawn_options)
-    # @option options [Hash] :spawn_options Options to pass to Process#spawn.
+    # Options to pass to `Process#spawn`.
+    # @return [Hash]
+    attr_accessor :spawn_options
+
+    # Environment variables to set in the child process.
+    # @return [Hash]
+    attr_accessor :env
+
+    # The PID of the child process if running.
+    # @return [Fixnum, nil]
+    attr_reader :pid
+
+    # @option options [String] :start_command See {#start_command}.
+    # @option options [Hash] :env See {#env}.
+    # @option options [Boolean] :quiet (false) See {#quiet}.
+    # @option options [Hash] :spawn_options See {#spawn_options}.
     def initialize(options={})
       options= {env: {}, quiet: false, spawn_options: {}}.merge(options)
       options[:spawn_options][:in] ||= '/dev/null'
@@ -21,7 +39,7 @@ module GollyUtils
     #
     # If it is already running, then this will do nothing.
     #
-    # @return @self@
+    # @return [self]
     def startup
       unless alive?
         opt= self.spawn_options
@@ -103,12 +121,14 @@ module GollyUtils
 
     # --------------------------------------------------------------------------------------------------------------------
     class << self
+      # @!visibility private
       OPTION_TRANSLATION= {
         stdout: :out,
         stderr: :err,
         stdin: :in,
       }.freeze
 
+      # @!visibility private
       def translate_options(prefix='')
         spawn_opts= {}
         OPTION_TRANSLATION.each do |from,to|
