@@ -8,7 +8,9 @@ WIP
 #### Added
 * Added new {GollyUtils::Delegator} option: `:allow_protected`
 * Added test helpers:
+    * `get_dirs`
     * `get_files`
+    * `get_dir_entries`
     * `inside_empty_dir`
     * `in_tmp_dir?`
     * `step_out_of_tmp_dir`

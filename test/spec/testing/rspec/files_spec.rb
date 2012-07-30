@@ -117,6 +117,28 @@ describe 'RSpec helpers' do
       it("should reuse same directory for all examples (2/2)"){ test }
     end
   end
+
+  context '#get_dirs' do
+    run_each_in_empty_dir
+    it("should return subdirectories without . and ..") {
+      get_dirs.should be_empty
+      Dir.mkdir 'b'
+      Dir.mkdir 'a'
+      Dir.mkdir 'a/123'
+      get_dirs.should == %w[a a/123 b]
+    }
+    it("should ignore files") {
+      File.write 'asd', 'asd'
+      get_dirs.should be_empty
+    }
+    it("should include directories starting with .") {
+      Dir.mkdir '.hehe'
+      Dir.mkdir 'm'
+      Dir.mkdir 'm/.hi'
+      get_dirs.should == %w[.hehe m m/.hi]
+    }
+  end
+
 end
 
 describe 'RSpec matchers' do

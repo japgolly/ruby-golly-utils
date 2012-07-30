@@ -70,15 +70,35 @@ module GollyUtils::Testing::Helpers
     nil
   end
 
-  # Recursively gets a list of all files.
+  # Returns a list of all files in a directory tree.
   #
-  # @param [String, nil] dir The directory in which to look for files, or `nil` to indicate the current directory.
+  # @param [String, nil] dir The directory to inspect, or `nil` to indicate the current directory.
   # @return [Array<String>] A sorted array of files. Filenames will be relative to the provided directory.
   def get_files(dir=nil)
+    get_dir_entries(dir).select{|f| File.file? f }
+  end
+
+  # Returns a list of all subdirectories in a directory.
+  #
+  # @param [String, nil] dir The directory to inspect, or `nil` to indicate the current directory.
+  # @return [Array<String>] A sorted array of dirs. Filenames will be relative to the provided directory. `.` and `..`
+  #   will never be returned.
+  def get_dirs(dir=nil)
+    get_dir_entries(dir).select{|f| File.directory? f }
+  end
+
+  # Returns a list of all files, directories, symlinks, etc in a directory tree.
+  #
+  # @param [String, nil] dir The directory to inspect, or `nil` to indicate the current directory.
+  # @return [Array<String>] A sorted array of dir entries. Filenames will be relative to the provided directory. `.` and
+  #   `..` will never be returned.
+  def get_dir_entries(dir=nil)
     if dir
-      Dir.chdir(dir){ get_files }
+      Dir.chdir(dir){ get_dir_entries }
     else
-      Dir.glob('**/*',File::FNM_DOTMATCH).select{|f| File.file? f }.sort
+      Dir.glob('**/*',File::FNM_DOTMATCH)
+        .reject{|f| /(?:^|[\\\/]+)\.{1,2}$/ === f } # Ignore:  .  ..  dir/.  dir/..
+        .sort
     end
   end
 
