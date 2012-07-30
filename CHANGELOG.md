@@ -10,9 +10,12 @@ WIP
 * Added test helpers:
     * `get_files`
     * `inside_empty_dir`
+    * `in_tmp_dir?`
+    * `step_out_of_tmp_dir`
 * Added RSpec helpers:
   * `run_all_in_empty_dir`
   * `run_each_in_empty_dir`
+  * `run_each_in_empty_dir_unless_in_one_already`
   * `exist_as_a_dir`
   * `exist_as_a_file`
 

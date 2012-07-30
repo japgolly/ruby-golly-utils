@@ -45,6 +45,49 @@ describe 'RSpec helpers' do
       it("should provide and reuse an empty directory for all examples (2/2)"){ test }
     end
   end
+
+  context '#in_tmp_dir?' do
+    it("should be false when not in tmp dir"){ in_tmp_dir?.should == false }
+    context 'with run_each_in_empty_dir' do
+      run_each_in_empty_dir
+      it("should be true"){ in_tmp_dir?.should == true }
+    end
+    context 'with run_all_in_empty_dir' do
+      run_all_in_empty_dir
+      it("should be true"){ in_tmp_dir?.should == true }
+    end
+  end
+
+  context 'run_each_in_empty_dir_unless_in_one_already' do
+    run_each_in_empty_dir_unless_in_one_already
+
+    context 'when not in an empty dir' do
+      def test
+        get_files.should be_empty
+        unless $golly_07301028
+          $golly_07301028= Dir.pwd
+        else
+          Dir.pwd.should_not == $golly_07301028 # Assert we've been given a different dir
+        end
+      end
+      it("should provide and an empty directory for all examples (1/2)"){ test }
+      it("should provide and an empty directory for all examples (2/2)"){ test }
+    end
+
+    context 'with run_all_in_empty_dir' do
+      run_all_in_empty_dir
+      def test
+        get_files.should be_empty
+        unless $golly_07301031
+          $golly_07301031= Dir.pwd
+        else
+          Dir.pwd.should == $golly_07301031 # Assert we're in the same dir
+        end
+      end
+      it("should reuse same directory for all examples (1/2)"){ test }
+      it("should reuse same directory for all examples (2/2)"){ test }
+    end
+  end
 end
 
 describe 'RSpec matchers' do

@@ -24,7 +24,9 @@ module GollyUtils::Testing::Helpers
     if block_given?
       Dir.mktmpdir {|dir|
         Dir.chdir(dir) {
+          (@tmp_dir_stack ||= [])<< :inside_empty_dir
           return yield dir
+          @tmp_dir_stack.pop
         }
       }
     else
@@ -35,6 +37,13 @@ module GollyUtils::Testing::Helpers
       (@tmp_dir_stack ||= [])<< x
       x[:tmp_dir]
     end
+  end
+
+  # Indicates whether the current directory is one made by {#inside_empty_dir}.
+  #
+  # @return [Boolean]
+  def in_tmp_dir?
+    @tmp_dir_stack && !@tmp_dir_stack.empty? or false
   end
 
   # To be used in conjunction with {#inside_empty_dir}.
@@ -51,6 +60,7 @@ module GollyUtils::Testing::Helpers
   def step_out_of_tmp_dir
     if @tmp_dir_stack
       x= @tmp_dir_stack.pop
+      raise "You cannot call step_out_of_tmp_dir() within the yield block of #{x}()" if x.is_a?(Symbol)
       Dir.chdir x[:old_dir]
       FileUtils.rm_rf x[:tmp_dir]
     end

@@ -6,6 +6,8 @@ module GollyUtils::Testing::Helpers::ClassMethods
   # Runs each RSpec example in a new, empty directory.
   #
   # Old directories are deleted at the end of each example, and the original current-directory restored.
+  #
+  # @return [void]
   def run_each_in_empty_dir
     eval <<-EOB
       around :each do |ex|
@@ -14,9 +16,25 @@ module GollyUtils::Testing::Helpers::ClassMethods
     EOB
   end
 
+  # Runs each RSpec example in a new, empty directory unless the context has already put it in one (for example, via
+  # {#run_all_in_empty_dir}).
+  #
+  # @return [void]
+  # @see #in_tmp_dir?
+  def run_each_in_empty_dir_unless_in_one_already
+    eval <<-EOB
+      around :each do |ex|
+        in_tmp_dir? ? ex.run : inside_empty_dir{ ex.run }
+      end
+    EOB
+  end
+
+
   # Runs all RSpec examples (in the current context) in a new, empty directory.
   #
   # The directory is deleted after all examples have run, and the original current-directory restored.
+  #
+  # @return [void]
   def run_all_in_empty_dir(&block)
     block ||= Proc.new{}
     @@around_all_in_empty_dir_count ||= 0
