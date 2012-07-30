@@ -25,8 +25,11 @@ module GollyUtils::Testing::Helpers
       Dir.mktmpdir {|dir|
         Dir.chdir(dir) {
           (@tmp_dir_stack ||= [])<< :inside_empty_dir
-          return yield dir
-          @tmp_dir_stack.pop
+          begin
+            return yield dir
+          ensure
+            @tmp_dir_stack.pop
+          end
         }
       }
     else

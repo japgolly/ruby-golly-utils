@@ -5,7 +5,7 @@ require 'golly-utils/testing/rspec/files'
 TMP_TEST_FILE= '.rubbish.tmp'
 
 describe 'RSpec helpers' do
-  context 'run_each_in_empty_dir' do
+  context '#run_each_in_empty_dir' do
     run_each_in_empty_dir
     def test
       get_files.should be_empty
@@ -16,7 +16,7 @@ describe 'RSpec helpers' do
     it("should provide each example with an empty directory (2/2)"){ test }
   end
 
-  context 'run_all_in_empty_dir' do
+  context '#run_all_in_empty_dir' do
     context 'without block' do
       run_all_in_empty_dir
       def test
@@ -28,6 +28,7 @@ describe 'RSpec helpers' do
       end
       it("should provide and reuse an empty directory for all examples (1/2)"){ test }
       it("should provide and reuse an empty directory for all examples (2/2)"){ test }
+
     end
 
     context 'with block' do
@@ -46,6 +47,34 @@ describe 'RSpec helpers' do
     end
   end
 
+  context '#inside_empty_dir' do
+    shared_examples "tmp_dir stack" do
+      it("should not affect the tmp_dir stack after leaving block"){
+        before= (@tmp_dir_stack || []).dup
+        old_pwd= Dir.pwd
+        inside_empty_dir {
+          Dir.pwd.should_not == old_pwd
+          get_files().should be_empty
+        }
+        @tmp_dir_stack.should == before
+      }
+    end
+
+    include_examples "tmp_dir stack"
+    it("should return the block result"){
+      inside_empty_dir{666}.should == 666
+    }
+
+    context 'within run_each_in_empty_dir' do
+      run_each_in_empty_dir
+      include_examples "tmp_dir stack"
+    end
+    context 'within run_all_in_empty_dir' do
+      run_all_in_empty_dir
+      include_examples "tmp_dir stack"
+    end
+  end
+
   context '#in_tmp_dir?' do
     it("should be false when not in tmp dir"){ in_tmp_dir?.should == false }
     context 'with run_each_in_empty_dir' do
@@ -58,7 +87,7 @@ describe 'RSpec helpers' do
     end
   end
 
-  context 'run_each_in_empty_dir_unless_in_one_already' do
+  context '#run_each_in_empty_dir_unless_in_one_already' do
     run_each_in_empty_dir_unless_in_one_already
 
     context 'when not in an empty dir' do

@@ -34,6 +34,9 @@ group :spec do
     # Each spec
     watch(%r'^test/spec/.+_spec\.rb$')
 
+    # Specific
+    watch('lib/golly-utils/testing/helpers/files.rb') {'test/spec/testing/rspec/files_spec.rb'}
+
     if bulk?
       # Test stuff affecting everything
       watch(%r'^test/bootstrap/(?:all|spec).rb') {"test/spec"}
