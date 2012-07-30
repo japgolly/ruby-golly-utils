@@ -75,7 +75,7 @@ module GollyUtils::Testing::Helpers
   # @param [String, nil] dir The directory to inspect, or `nil` to indicate the current directory.
   # @return [Array<String>] A sorted array of files. Filenames will be relative to the provided directory.
   def get_files(dir=nil)
-    get_dir_entries(dir).select{|f| File.file? f }
+    get_dir_entries(dir){|f| File.file? f }
   end
 
   # Returns a list of all subdirectories in a directory.
@@ -84,20 +84,23 @@ module GollyUtils::Testing::Helpers
   # @return [Array<String>] A sorted array of dirs. Filenames will be relative to the provided directory. `.` and `..`
   #   will never be returned.
   def get_dirs(dir=nil)
-    get_dir_entries(dir).select{|f| File.directory? f }
+    get_dir_entries(dir){|f| File.directory? f }
   end
 
   # Returns a list of all files, directories, symlinks, etc in a directory tree.
   #
   # @param [String, nil] dir The directory to inspect, or `nil` to indicate the current directory.
+  # @param select_filter An optional filter to be applied to each entry where negative calls result in the entry being
+  #   discarded.
   # @return [Array<String>] A sorted array of dir entries. Filenames will be relative to the provided directory. `.` and
   #   `..` will never be returned.
-  def get_dir_entries(dir=nil)
+  def get_dir_entries(dir=nil, &select_filter)
     if dir
-      Dir.chdir(dir){ get_dir_entries }
+      Dir.chdir(dir){ get_dir_entries &select_filter }
     else
       Dir.glob('**/*',File::FNM_DOTMATCH)
         .reject{|f| /(?:^|[\\\/]+)\.{1,2}$/ === f } # Ignore:  .  ..  dir/.  dir/..
+        .select{|f| select_filter ? select_filter.call(f) : true }
         .sort
     end
   end

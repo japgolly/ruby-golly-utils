@@ -137,6 +137,12 @@ describe 'RSpec helpers' do
       Dir.mkdir 'm/.hi'
       get_dirs.should == %w[.hehe m m/.hi]
     }
+    it("should jump into the provided directory") {
+      Dir.mkdir 'a'
+      Dir.mkdir 'b'
+      Dir.mkdir 'a/123'
+      get_dirs('a').should == %w[123]
+    }
   end
 
 end
