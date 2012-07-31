@@ -7,6 +7,8 @@ WIP
 
 #### Added
 * Added new {GollyUtils::Delegator} option: `:allow_protected`
+* Added Ruby extensions:
+  * {Enumerable#frequency_map}
 * Added test helpers:
   * {GollyUtils::Testing::Helpers#get_dirs get_dirs}
   * {GollyUtils::Testing::Helpers#get_files get_files}
@@ -20,6 +22,7 @@ WIP
   * {GollyUtils::Testing::Helpers::ClassMethods#run_each_in_empty_dir_unless_in_one_already run_each_in_empty_dir_unless_in_one_already}
   * {GollyUtils::Testing::RSpecMatchers#exist_as_a_dir exist_as_a_dir}
   * {GollyUtils::Testing::RSpecMatchers#exist_as_a_file exist_as_a_file}
+  * {GollyUtils::Testing::RSpecMatchers#equal_array equal_array}
 
 #### Modified
 * {GollyUtils::Delegator#respond_to?} now also indicates `true` for local methods (in addition to delegatable).
