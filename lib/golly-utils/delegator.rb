@@ -47,7 +47,7 @@ module GollyUtils
     end
 
     def respond_to?(method)
-      !delegates_that_respond_to(method).empty?
+      super(method) or !delegates_that_respond_to(method).empty?
     end
 
     private

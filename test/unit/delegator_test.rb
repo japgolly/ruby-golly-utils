@@ -41,12 +41,19 @@ class DelegatorTest < MiniTest::Unit::TestCase
     assert_equal [10,20], nd(na,nb,delegate_to: :all).c
   end
 
-  def test_respond_to
+  def test_respond_to_checks_delegatable
     d= nd(na,nb)
     assert d.respond_to?(:a)
     assert d.respond_to?(:b)
     assert d.respond_to?(:c)
     assert !d.respond_to?(:x)
+  end
+
+  def test_respond_to_checks_internal
+    d= nd(na,nb)
+    refute d.respond_to?(:xxx)
+    d.instance_eval 'def xxx; end'
+    assert d.respond_to?(:xxx)
   end
 
   def test_caching

@@ -22,6 +22,7 @@ WIP
   * `exist_as_a_file`
 
 #### Modified
+* {GollyUtils::Delegator#respond_to?} now also indicates `true` for local methods (in addition to delegatable).
 * Renamed dir: `golly-utils/test` => `golly-utils/testing`.
 * Renamed dir: `golly-utils/test/spec` => `golly-utils/testing/rpsec`.
 * Renamed module: `GollyUtils::TestHelpers` => `GollyUtils::Testing::Helpers`
