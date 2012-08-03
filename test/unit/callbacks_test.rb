@@ -14,18 +14,16 @@ class CallbacksTest < MiniTest::Unit::TestCase
     include GollyUtils::Callbacks
     define_callback :base
     def self.record(v); CallbacksTest::VALUES << v end
-    def self.run
+    def self.run(*args)
       o= self.new
-      o.run
+      o.run(*args)
       CallbacksTest::VALUES
     end
   end
 
   class Omg < Base
     define_callback :wow
-    def run
-      run_callback :wow
-    end
+    def run; run_callback :wow end
   end
   def test_none; assert_equal [], Omg.run; end
 
@@ -71,6 +69,34 @@ class CallbacksTest < MiniTest::Unit::TestCase
   rescue => e
     assert e.to_s['what'], "Error message doesn't include the conflicting method/callback name.\nErrMsg: #{e}"
     assert_equal 135, Fail.what
+  end
+
+  class Args < Base
+    base{ |i| record (i || 0)+5 }
+  end
+
+  def test_run_callback_with_args
+    Args.new.run_callback :base, 4
+    assert_equal [9], VALUES
+  end
+
+  def test_run_callbacks_with_args_array
+    Args.new.run_callbacks :base, args: [3]
+    assert_equal [8], VALUES
+  end
+
+  def test_run_callbacks_with_args_nonarray
+    Args.new.run_callbacks :base, args: 13
+    flunk "Failure expected."
+  rescue => e
+    assert_match /array/i, e.to_s
+  end
+
+  def test_run_callbacks_fails_with_unrecognisable_options
+    Args.new.run_callbacks :base, stuff: [3]
+    flunk "Failure expected."
+  rescue => e
+    assert_match /stuff/, e.to_s
   end
 
 end

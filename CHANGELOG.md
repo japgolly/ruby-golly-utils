@@ -6,7 +6,8 @@ Golly's Utils: Changelog
 WIP
 
 #### Added
-* Added new {GollyUtils::Delegator} option: `:allow_protected`
+* Added new {GollyUtils::Delegator Delegator} option: `:allow_protected`
+* {GollyUtils::Callbacks::InstanceMethods#run_callbacks Callbacks#run_callbacks} now accepts options which currently allows for callback arguments to be specified.
 * Added Ruby extensions:
   * {Enumerable#frequency_map}
 * Added test helpers:
@@ -25,7 +26,8 @@ WIP
   * {GollyUtils::Testing::RSpecMatchers#equal_array equal_array}
 
 #### Modified
-* {GollyUtils::Delegator#respond_to?} now also indicates `true` for local methods (in addition to delegatable).
+* {GollyUtils::Delegator#respond_to? Delegator#respond_to?} now also indicates `true` for local methods (in addition to delegatable).
+* {GollyUtils::Callbacks::InstanceMethods#run_callback Callbacks#run_callback} now only runs a single callback, and accepts arguments to pass to each callback.
 * Renamed dir: `golly-utils/test` => `golly-utils/testing`.
 * Renamed dir: `golly-utils/test/spec` => `golly-utils/testing/rpsec`.
 * Renamed module: `GollyUtils::TestHelpers` => `GollyUtils::Testing::Helpers`

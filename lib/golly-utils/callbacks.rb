@@ -134,23 +134,54 @@ module GollyUtils
 
     module InstanceMethods
 
+      # Run all callbacks provided for a single callback point.
+      #
+      # @param [String, Symbol] callback The callback name.
+      # @param args Arguments to pass to the callbacks.
+      # @return [true]
+      # @raise If the provided callback name hasn't been declared for this class.
+      # @see Callbacks
+      # @see ClassMethods#define_callbacks
+      def run_callback(callback, *args)
+        name= _norm_callback_key(callback)
+        name_verified,callback_procs = self.class.send :_get_callback_procs, name
+        raise "There is no callback defined with name #{name}." unless name_verified
+        callback_procs.each{|cb| cb.call *args }
+        true
+      end
+
       # Run all callbacks provided for one or more callback points.
       #
-      # @param [Array<String, Symbol>] callbacks The callback name(s).
-      # @return [void]
+      # @overload run_callbacks(*callbacks, options = {})
+      #   @param [Array<String, Symbol>] callbacks The callback name(s).
+      #   @param [Hash] options
+      #   @option options [Array] args ([]) Arguments to pass to the callbacks.
+      # @return [true]
       # @raise If one of the provided callback names hasn't been declared for this class.
+      # @raise If unrecognised options are provided.
       # @see Callbacks
       # @see ClassMethods#define_callbacks
       def run_callbacks(*callbacks)
-        callbacks.each do |name|
-          name= _norm_callback_key(name)
-          name_verified,results = self.class.send :_get_callback_procs, name
-          raise "There is no callback defined with name #{name}." unless name_verified
-          results.each{|cb| cb.call }
+        # Parse options
+        options= callbacks.last.is_a?(Hash) ? callbacks.pop : {}
+        invalid_options= options.keys - RUN_CALLBACKS_OPTIONS
+        unless invalid_options.empty?
+          raise "Unable to recognise options: #{invalid_options.map(&:inspect).sort}"
+        end
+
+        # Validate options
+        args= options[:args] || []
+        raise "The :args option must provide an array. Invalid: #{args}" unless args.is_a?(Array)
+
+        # Run callbacks
+        callbacks.each do |callback|
+          run_callback callback, *args
         end
         true
       end
-      alias :run_callback :run_callbacks
+
+      # @!visibility private
+      RUN_CALLBACKS_OPTIONS= [:args].freeze
 
     end
   end
