@@ -1,5 +1,10 @@
 require 'corvid/guard'
 
+# TODO move to corvid: vim swap & guard
+# Ignore Vim swap files
+ignore /~$/
+ignore /^(?:.*[\\\/])?\.[^\\\/]+\.sw[p-z]$/
+
 ########################################################################################################################
 # test/unit
 
