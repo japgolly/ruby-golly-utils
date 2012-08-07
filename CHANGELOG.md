@@ -7,6 +7,7 @@ WIP
 
 #### Added
 * Added new {GollyUtils::Delegator Delegator} option: `:allow_protected`
+* {GollyUtils::Callbacks Callbacks} can now be defined in modules.
 * {GollyUtils::Callbacks::InstanceMethods#run_callbacks Callbacks#run_callbacks} now accepts options which currently allows for callback arguments to be specified.
 * Added Ruby extensions:
   * {Enumerable#frequency_map}

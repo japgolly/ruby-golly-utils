@@ -28,7 +28,6 @@ module GollyUtils
   #   1. Supply a callback by declaring the callback name in the class definition, followed by a block of code.
   #
   # @example
-  #
   #   class Engine
   #     include GollyUtils::Callbacks
   #
@@ -50,30 +49,98 @@ module GollyUtils
   #   CustomEngine.new.start    # => About to start...
   #                             # => ---> STARTING!!!
   #                             # => Running.
+  #
+  # @example Also works in modules
+  #   module SupportsStuff
+  #     include GollyUtils::Callbacks
+  #     define_callback :stuff
+  #   end
+  #
+  #   class DoerOfStuff
+  #     include SupportsStuff
+  #     stuff{ puts 'Doing stuff!!' }
+  #   end
+  #
+  #   def stuff_machine(anything_that_supports_stuff)
+  #     puts "I'll take anything that SupportsStuff."
+  #     anything_that_supports_stuff.run_callbacks :stuff
+  #     puts "See!"
+  #   end
+  #
+  #   stuff_machine DoerOfStuff.new  # => I'll take anything that SupportsStuff.
+  #                                  # => Doing stuff!!
+  #                                  # => See!
   module Callbacks
 
     # @!visibility private
     def self.included(base)
-      base.send :include, InstanceMethods
-      base.send :include, InstanceAndClassMethods
-      base.extend InstanceAndClassMethods
-      base.extend ClassMethods
+      if base.is_a?(Class)
+        base.send :include, InstanceMethods
+        base.extend ClassMethods
+      else
+        base.extend ModuleMethods
+        base.class_eval <<-EOB
+        class << self
+          alias :included_without_gu_callbacks :included
+          def included(base)
+            included_without_gu_callbacks(base)
+            __add_callbacks_when_included(base)
+          end
+        end
+        EOB
+      end
+    end
+
+    # @!visibility private
+    def self.__norm_callback_key(key)
+      key.to_sym
     end
 
     #-------------------------------------------------------------------------------------------------------------------
 
+    # Provides methods that can be run within definitions of modules that include {Callbacks}.
+    module ModuleMethods
+
+      # Create one or more callback points that will be added to classes that include the enclosing module.
+      #
+      # @param (see GollyUtils::Callbacks::ClassMethods#define_callbacks)
+      # @return [true]
+      def define_callbacks(*callbacks)
+        __module_callback_names.concat callbacks
+        __module_callback_names.uniq!
+        true
+      end
+      alias :define_callback :define_callbacks
+
+      private
+      def __add_callbacks_when_included(base)
+        base.send :include, Callbacks
+        names= __module_callback_names
+        unless names.empty?
+          base.class_eval "define_callbacks *#{names.inspect}"
+        end
+      end
+
+      def __module_callback_names
+        @__module_callbacks ||= []
+      end
+    end
+
+    #-------------------------------------------------------------------------------------------------------------------
+
+    # Provides methods that can be run within definitions of classes that include {Callbacks}.
     module ClassMethods
 
       # Create one or more callback points for this class and its children.
       #
-      # @param [Array<String, Symbol>] callbacks The callback name(s).
-      # @return [void]
+      # @param [Array<String|Symbol>] callbacks The callback name(s).
+      # @return [true]
       # @raise If the callback has already been defined, or a method with that name already exists.
       # @see Callbacks
       # @see InstanceMethods#run_callbacks
       def define_callbacks(*callbacks)
         callbacks.each do |name|
-          name= _norm_callback_key(name)
+          name= ::GollyUtils::Callbacks.__norm_callback_key(name)
 
           if self.methods.include?(name.to_sym)
             raise "Can't create callback with name '#{name}'. A method with that name already exists."
@@ -87,6 +154,7 @@ module GollyUtils
             end
           EOB
         end
+        true
       end
       alias :define_callback :define_callbacks
 
@@ -120,18 +188,7 @@ module GollyUtils
 
     #-------------------------------------------------------------------------------------------------------------------
 
-    # @!visibility private
-    module InstanceAndClassMethods
-
-      private
-      def _norm_callback_key(key)
-        key.to_sym
-      end
-
-    end
-
-    #-------------------------------------------------------------------------------------------------------------------
-
+    # Provides methods that are available to instances of classes that include {Callbacks}.
     module InstanceMethods
 
       # Run all callbacks provided for a single callback point.
@@ -143,7 +200,7 @@ module GollyUtils
       # @see Callbacks
       # @see ClassMethods#define_callbacks
       def run_callback(callback, *args)
-        name= _norm_callback_key(callback)
+        name= ::GollyUtils::Callbacks.__norm_callback_key(callback)
         name_verified,callback_procs = self.class.send :_get_callback_procs, name
         raise "There is no callback defined with name #{name}." unless name_verified
         callback_procs.each{|cb| cb.call *args }

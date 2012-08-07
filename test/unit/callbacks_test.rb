@@ -99,4 +99,25 @@ class CallbacksTest < MiniTest::Unit::TestCase
     assert_match /stuff/, e.to_s
   end
 
+  module TestModule
+    include GollyUtils::Callbacks
+    define_callback :from_mod
+  end
+
+  class WithMod
+    include TestModule
+    def self.record(v); CallbacksTest::VALUES << v end
+    def self.run(*args)
+      o= self.new
+      o.run_callback :from_mod
+      CallbacksTest::VALUES
+    end
+    from_mod{ record 357 }
+  end
+  def test_with_module; assert_equal [357], WithMod.run; end
 end
+    def self.run(*args)
+      o= self.new
+      o.run(*args)
+      CallbacksTest::VALUES
+    end
