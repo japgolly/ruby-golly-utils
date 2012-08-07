@@ -26,14 +26,19 @@ module GollyUtils
     def self.included(base)
       base.send :include, ::Singleton
       base.extend ClassMethods
-      base.class.class_eval <<-EOB
-        alias :method_missing_before_gu_singleton :method_missing
-        def method_missing(method, *args, &block)
-          r= __gu_singleton_method_missing(self, method, *args, &block)
-          if ::GollyUtils::Singleton::NO_MATCH == r
+      base.class_eval <<-EOB
+        class << self
+          alias :method_missing_before_gu_singleton :method_missing
+          def method_missing(method, *args, &block)
+            if method != :__gu_singleton_method_missing
+
+              r= __gu_singleton_method_missing(self, method, *args, &block)
+              unless ::GollyUtils::Singleton::NO_MATCH == r
+                return r
+              end
+
+            end
             method_missing_before_gu_singleton method, *args, &block
-          else
-            r
           end
         end
       EOB
