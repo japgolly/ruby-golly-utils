@@ -5,7 +5,6 @@ require 'golly-utils/attr_declarative'
 class AttrDeclarativeTest < MiniTest::Unit::TestCase
 
   class Abc
-    include GollyUtils::AttrDeclarative
     attr_declarative :cow
     attr_declarative :horse, :horse2, default: 246
   end
@@ -60,7 +59,6 @@ class AttrDeclarativeTest < MiniTest::Unit::TestCase
   end
 
   class Seikima
-    include GollyUtils::AttrDeclarative
     attr_declarative ok: 'sweet'
   end
   def test_quik_syntax
