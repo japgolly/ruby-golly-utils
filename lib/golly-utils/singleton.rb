@@ -8,6 +8,8 @@ module GollyUtils
   #
   # * Target class includes Ruby's `Singleton` module too.
   # * Class methods are added to the target class that delegate to the singleton instance.
+  # * A convenience method {ClassMethods#def_accessor def_accessor} is provided to create an accessor in the calling
+  #   class, as per `attr_accessor`, except that the value defaults to the singleton instance.
   #
   # @example
   #   class Stam1na
@@ -45,6 +47,35 @@ module GollyUtils
     end
 
     module ClassMethods
+
+      # Creates an instance accessor as `attr_accessor` does, execpt that the default value will be the singleton
+      # instance.
+      #
+      # @example
+      #   class A
+      #     include GollyUtils::Singleton
+      #   end
+      #
+      #   class B
+      #     A.def_accessor self, :a
+      #   end
+      #
+      #   B.new.a == A.instance  #=> true
+      #
+      # @param [Class|Module] target The object definition to add the attribute methods to.
+      # @param [String|Symbol] name The attribute name.
+      # @return [nil]
+      def def_accessor(target, name)
+        target.class_eval <<-EOB
+          def #{name}
+             @#{name} ||= ::#{self}.instance
+          end
+          def #{name}=(v)
+             @#{name}= v
+          end
+        EOB
+        nil
+      end
 
       # Prevents class-level delegate methods from being created for certain instance methods.
       #

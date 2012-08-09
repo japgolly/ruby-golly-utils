@@ -17,6 +17,10 @@ class SingletonTest < MiniTest::Unit::TestCase
     hide_singleton_methods 'me_too'
   end
 
+  class SomeOtherClass
+    SymphonyX.def_accessor self, :ahh
+  end
+
   def test_ruby_singleton
     mods= SymphonyX.included_modules.map(&:to_s)
     assert mods.include?('Singleton'), "Doesn't extend Ruby Singleton. #{mods.sort.inspect}"
@@ -36,5 +40,12 @@ class SingletonTest < MiniTest::Unit::TestCase
 
   def test_hides_methods_by_string
     assert_raises(NoMethodError){ SymphonyX.me_too }
+  end
+
+  def test_accessor
+    a= SomeOtherClass.new
+    assert_equal SymphonyX.instance, a.ahh
+    a.ahh= 123
+    assert_equal 123, a.ahh
   end
 end
