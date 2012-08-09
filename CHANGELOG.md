@@ -28,15 +28,13 @@ WIP
   * {GollyUtils::Testing::RSpecMatchers#equal_array equal_array}
 
 #### Modified
+* Finished the experiment that was {GollyUtils::AttrDeclarative}. No mucking around with blocks, eager/lazy evaluation anymore; now it's all values.
 * {GollyUtils::Delegator#respond_to? Delegator#respond_to?} now also indicates `true` for local methods (in addition to delegatable).
 * {GollyUtils::Callbacks::InstanceMethods#run_callback Callbacks#run_callback} now only runs a single callback, and accepts arguments to pass to each callback.
 * Renamed dir: `golly-utils/test` => `golly-utils/testing`.
 * Renamed dir: `golly-utils/test/spec` => `golly-utils/testing/rpsec`.
 * Renamed module: `GollyUtils::TestHelpers` => `GollyUtils::Testing::Helpers`
 * Renamed module: `GollyUtils::DeferrableSpecs` => `GollyUtils::Testing::DeferrableSpecs`
-
-#### Removed
-* Removed `attr_declarative` (experiment that didn't prove useful).
 
 ## 0.0.1 (2012-07-16)
 
