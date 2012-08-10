@@ -64,6 +64,8 @@ module GollyUtils
       #   end
       #
       #   class A
+      #     # @!attribute [rw] happy_days
+      #     #   @return [HappyDays]
       #     HappyDays.def_accessor self
       #   end
       #
