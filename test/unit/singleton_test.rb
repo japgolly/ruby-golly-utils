@@ -18,6 +18,7 @@ class SingletonTest < MiniTest::Unit::TestCase
   end
 
   class SomeOtherClass
+    SymphonyX.def_accessor self
     SymphonyX.def_accessor self, :ahh
   end
 
@@ -42,7 +43,14 @@ class SingletonTest < MiniTest::Unit::TestCase
     assert_raises(NoMethodError){ SymphonyX.me_too }
   end
 
-  def test_accessor
+  def test_accessor_with_default_name
+    a= SomeOtherClass.new
+    assert_equal SymphonyX.instance, a.symphony_x
+    a.symphony_x= 123
+    assert_equal 123, a.symphony_x
+  end
+
+  def test_accessor_with_name
     a= SomeOtherClass.new
     assert_equal SymphonyX.instance, a.ahh
     a.ahh= 123

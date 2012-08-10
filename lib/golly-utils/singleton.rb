@@ -30,7 +30,9 @@ module GollyUtils
       base.extend ClassMethods
       base.class_eval <<-EOB
         class << self
+
           alias :method_missing_before_gu_singleton :method_missing
+
           def method_missing(method, *args, &block)
             if method != :__gu_singleton_method_missing
 
@@ -42,6 +44,11 @@ module GollyUtils
             end
             method_missing_before_gu_singleton method, *args, &block
           end
+
+          def __default_singleton_attr_name
+            '#{base.to_s.sub(/^.*::/,'').gsub(/(?<=[a-z])(?=[A-Z])/,'_').downcase}'
+          end
+
         end
       EOB
     end
@@ -52,20 +59,22 @@ module GollyUtils
       # instance.
       #
       # @example
-      #   class A
+      #   class HappyDays
       #     include GollyUtils::Singleton
       #   end
       #
-      #   class B
-      #     A.def_accessor self, :a
+      #   class A
+      #     HappyDays.def_accessor self
       #   end
       #
-      #   B.new.a == A.instance  #=> true
+      #   A.new.happy_days == HappyDays.instance  #=> true
       #
       # @param [Class|Module] target The object definition to add the attribute methods to.
-      # @param [String|Symbol] name The attribute name.
+      # @param [String|Symbol] name The attribute name. Defaults to the singleton class name, with underscores and in
+      #   lowercase.
       # @return [nil]
-      def def_accessor(target, name)
+      def def_accessor(target, name=nil)
+        name ||= __default_singleton_attr_name
         target.class_eval <<-EOB
           def #{name}
              @#{name} ||= ::#{self}.instance
