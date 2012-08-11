@@ -4,13 +4,16 @@ module GollyUtils
   # 1. Default values can be specified.
   # 1. Defaults can be overridden in subclasses.
   # 1. Values can be declared, failing-fast on typos.
+  # 1. Explicit declaration of an attribute value can be required and enforced. (Optional)
+  #
+  #    i.e. if an attribute is read before a value has been specified, then an error will be thrown.
   #
   # @example
   #   require 'golly-utils/attr_declarative'
   #
   #   class Plugin
   #     attr_declarative :name, :author
-  #     attr_declarative required_version: 10
+  #     attr_declarative version: 10
   #   end
   #
   #   class BluePlugin < Plugin
@@ -20,7 +23,7 @@ module GollyUtils
   #   p = BluePlugin.new
   #   puts p.name              # => The Blue Plugin
   #   puts p.author            # => nil
-  #   puts p.required_version  # => 10
+  #   puts p.version           # => 10
   #
   # @example Typos fail-fast:
   #   class RedPlugin < Plugin
@@ -30,6 +33,17 @@ module GollyUtils
   #       'The Red Plugin'     # name() was defined in the superclass to fail by default.
   #     end
   #   end
+  #
+  # @example Attribute value declaration can be required and enfored:
+  #   class Plugin
+  #     attr_declarative :name, required: true
+  #   end
+  #
+  #   class BluePlugin < Plugin
+  #   end
+  #
+  #   p = BluePlugin.new
+  #   puts p.name        # => RuntimeError: Attribute 'name' required by Plugin but not set in BluePlugin.
   #
   module AttrDeclarative
 
@@ -53,6 +67,8 @@ module GollyUtils
     # @overload attr_declarative(*names, options={})
     #   @param [Array<String|Symbol>] names The attribute names.
     #   @option options [Object] :default (nil) The default value for all specified attributes.
+    #   @option options [Object] :required (false) If required, an attribute will raise an error if it is read before it
+    #     has been set.
     # @return [nil]
     def attr_declarative(first,*args)
       # Parse args
@@ -69,6 +85,7 @@ module GollyUtils
 
       # Validate options
       default= options.delete :default
+      required= (options.has_key? :required) ? options.delete(:required): false
       raise "Unknown options: #{options.keys}" unless options.empty?
 
       # Create attributes
@@ -87,7 +104,7 @@ module GollyUtils
             elsif d= ::GollyUtils::AttrDeclarative.get_default(:#{dvar}, self.class)
               @#{name}= d
             else
-              nil
+              #{required ? %[raise "Attribute '#{name}' required by #{self} but not set in #\{self.class}."] : 'nil'}
             end
           end
 

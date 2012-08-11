@@ -7,6 +7,7 @@ class AttrDeclarativeTest < MiniTest::Unit::TestCase
   class Abc
     attr_declarative :cow
     attr_declarative :horse, :horse2, default: 246
+    attr_declarative :important, required: true
   end
 
   def test_acts_like_attribute
@@ -51,6 +52,7 @@ class AttrDeclarativeTest < MiniTest::Unit::TestCase
 
   class Abc4 < Abc
     cow nil
+    important 666
   end
   def test_subclass_with_nil_default
     assert_nil Abc.new.cow
@@ -63,5 +65,27 @@ class AttrDeclarativeTest < MiniTest::Unit::TestCase
   end
   def test_quik_syntax
     assert_equal 'sweet', Seikima.new.ok
+  end
+
+  def test_required_fields_fail_when_undefined
+    e= assert_raises(RuntimeError){ Abc.new.important }
+  end
+
+  def test_error_msg_when_required_field_missing_mentions_subclass_name
+    e= assert_raises(RuntimeError){ Abc2.new.important }
+    assert_match /Abc2/, e.message
+  end
+
+  def test_required_fields_works_as_normal_once_defined
+    assert_equal 666, Abc4.new.important
+    x= Abc.new
+    x.important= 135
+    assert_equal 135, x.important
+  end
+
+  def test_required_fields_can_be_set_to_nil
+    x= Abc.new
+    x.important= nil
+    assert_nil x.important
   end
 end
