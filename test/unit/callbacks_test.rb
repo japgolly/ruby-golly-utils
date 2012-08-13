@@ -104,8 +104,14 @@ class CallbacksTest < MiniTest::Unit::TestCase
     define_callback :from_mod
   end
 
+  module TestModule2
+    include TestModule
+    define_callback :from_mod2
+  end
+
   class WithMod
     include TestModule
+    define_callback :bru
     def self.record(v); CallbacksTest::VALUES << v end
     def self.run(*args)
       o= self.new
@@ -116,10 +122,17 @@ class CallbacksTest < MiniTest::Unit::TestCase
   end
   def test_with_module; assert_equal [357], WithMod.run; end
 
-  def test_callbacks_method
+  def test_callbacks_class_method
     assert_equal [:base], Base.callbacks
     assert_equal [:base, :wow], Omg.callbacks
     assert_equal [:base, :wow], Omg2.callbacks
     assert_equal [:base, :dude, :sweet, :wow], Sweet.callbacks
+  end
+  def test_callbacks_module_method
+    assert_equal [:from_mod], TestModule.callbacks
+    assert_equal [:from_mod, :from_mod2], TestModule2.callbacks
+  end
+  def test_callbacks_class_with_module
+    assert_equal [:bru, :from_mod], WithMod.callbacks
   end
 end
