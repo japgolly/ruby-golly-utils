@@ -5,7 +5,7 @@ require 'golly-utils/testing/rspec/files'
 TMP_TEST_FILE= '.rubbish.tmp'
 
 describe 'RSpec helpers' do
-  context '#run_each_in_empty_dir' do
+  describe '#run_each_in_empty_dir' do
     run_each_in_empty_dir
     def test
       get_files.should be_empty
@@ -16,7 +16,7 @@ describe 'RSpec helpers' do
     it("should provide each example with an empty directory (2/2)"){ test }
   end
 
-  context '#run_all_in_empty_dir' do
+  describe '#run_all_in_empty_dir' do
     context 'without block' do
       run_all_in_empty_dir
       def test
@@ -47,7 +47,7 @@ describe 'RSpec helpers' do
     end
   end
 
-  context '#inside_empty_dir' do
+  describe '#inside_empty_dir' do
     shared_examples "tmp_dir stack" do
       it("should not affect the tmp_dir stack after leaving block"){
         before= (@tmp_dir_stack || []).dup
@@ -75,7 +75,7 @@ describe 'RSpec helpers' do
     end
   end
 
-  context '#in_tmp_dir?' do
+  describe '#in_tmp_dir?' do
     it("should be false when not in tmp dir"){ in_tmp_dir?.should == false }
     context 'with run_each_in_empty_dir' do
       run_each_in_empty_dir
@@ -87,7 +87,7 @@ describe 'RSpec helpers' do
     end
   end
 
-  context '#run_each_in_empty_dir_unless_in_one_already' do
+  describe '#run_each_in_empty_dir_unless_in_one_already' do
     run_each_in_empty_dir_unless_in_one_already
 
     context 'when not in an empty dir' do
@@ -118,7 +118,7 @@ describe 'RSpec helpers' do
     end
   end
 
-  context '#get_dirs' do
+  describe '#get_dirs' do
     run_each_in_empty_dir
     it("should return subdirectories without . and ..") {
       get_dirs.should be_empty
@@ -148,7 +148,7 @@ describe 'RSpec helpers' do
 end
 
 describe 'RSpec matchers' do
-  context 'exist_as_file' do
+  describe '#exist_as_file' do
     run_each_in_empty_dir
 
     it("should pass when a file exists"){
@@ -170,7 +170,7 @@ describe 'RSpec matchers' do
     }
   end
 
-  context 'exist_as_dir' do
+  describe '#exist_as_dir' do
     run_each_in_empty_dir
 
     it("should pass when a dir exists"){
@@ -190,5 +190,49 @@ describe 'RSpec matchers' do
         TMP_TEST_FILE.should exist_as_dir
       }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
     }
+  end
+
+  describe '#be_file_with_contents' do
+    run_all_in_empty_dir
+    it("should pass if file contents match string"){
+      File.write TMP_TEST_FILE, "hehe\n"
+      TMP_TEST_FILE.should be_file_with_contents "hehe\n"
+    }
+    it("should pass if file contents match regex"){
+      File.write TMP_TEST_FILE, "omg man"
+      TMP_TEST_FILE.should be_file_with_contents /^omg/
+    }
+    it("should pass if file contents match all given expections"){
+      File.write TMP_TEST_FILE, 'omg man 123'
+      TMP_TEST_FILE.should be_file_with_contents(/^omg/).and(/123/)
+    }
+    it("should fail if file contents dont match regex"){
+      File.write TMP_TEST_FILE, 'omg man 123'
+      expect{
+        TMP_TEST_FILE.should be_file_with_contents /mann/
+      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    }
+    it("should fail if file contents dont match string"){
+      File.write TMP_TEST_FILE, 'omg man 123'
+      expect{
+        TMP_TEST_FILE.should be_file_with_contents 'what'
+      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    }
+    it("should fail if file contents fail one of multiple expections"){
+      File.write TMP_TEST_FILE, 'omg man 123'
+      expect{
+        TMP_TEST_FILE.should be_file_with_contents(/^omg/).and(/1234/)
+      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+      expect{
+        TMP_TEST_FILE.should be_file_with_contents(/^omgx/).and(/123/)
+      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    }
+    it("should fail if file doesn't exist"){
+      File.delete TMP_TEST_FILE if File.exists? TMP_TEST_FILE
+      expect{
+        TMP_TEST_FILE.should be_file_with_contents //
+      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    }
+
   end
 end

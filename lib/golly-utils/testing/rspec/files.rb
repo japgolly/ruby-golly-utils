@@ -141,4 +141,49 @@ module GollyUtils::Testing::RSpecMatchers
   end
   alias :exist_as_dir :exist_as_a_dir
 
+
+  #-----------------------------------------------------------------------------------------------------------------
+
+  # @!visibility private
+  class FileWithContents
+    def initialize
+      @contents= []
+    end
+
+    def and(contents)
+      @contents<< contents
+      self
+    end
+
+    def matches?(file)
+      @contents= @contents.flatten.uniq
+      file.should ExistAsFile.new
+      @filename= file
+      @file_content= File.read(file)
+      @failures= []
+      #@contents.all? {|c| c === @file_content }
+      @contents.each {|c| @failures<< c unless c === @file_content }
+      @failures.empty?
+    end
+
+    def failure_message_for_should
+      "expected that '#@filename' would have expected content.\n" +
+      @failures.map{|f| "Expected: #{f.inspect}" }.join("\n") +
+      "\n  Actual: #{@file_content.inspect}"
+    end
+
+    def failure_message_for_should_not
+      "expected that '#@filename' would not have expected content.\n" +
+      (@contents - @failures).map{|f| "Unexpected: #{f.inspect}" }.join("\n")
+    end
+  end
+
+  # Checks that a file exists and has expected content.
+  #
+  # @example
+  #   'Gemfile'.should be_file_with_contents(/['"]rspec['"]/).and(/['"]golly-utils['"]/)
+  #   'version.txt'.should be_file_with_contents "2\n"
+  def be_file_with_contents(contents, *extra)
+    FileWithContents.new.and(contents).and(extra)
+  end
 end

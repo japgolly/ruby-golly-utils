@@ -23,6 +23,7 @@ WIP
   * {GollyUtils::Testing::Helpers::ClassMethods#run_all_in_empty_dir run_all_in_empty_dir}
   * {GollyUtils::Testing::Helpers::ClassMethods#run_each_in_empty_dir run_each_in_empty_dir}
   * {GollyUtils::Testing::Helpers::ClassMethods#run_each_in_empty_dir_unless_in_one_already run_each_in_empty_dir_unless_in_one_already}
+  * {GollyUtils::Testing::RSpecMatchers#be_file_with_contents be_file_with_contents}
   * {GollyUtils::Testing::RSpecMatchers#exist_as_a_dir exist_as_a_dir}
   * {GollyUtils::Testing::RSpecMatchers#exist_as_a_file exist_as_a_file}
   * {GollyUtils::Testing::RSpecMatchers#equal_array equal_array}
