@@ -158,6 +158,15 @@ module GollyUtils
       end
       alias :define_callback :define_callbacks
 
+      # Returns a list of all callbacks available to this class. (i.e. defined and inherited.)
+      #
+      # @return [Array<Symbol>] Callbacks declared in this class and/or its superclasses.
+      def callbacks
+        c= superclass.respond_to?(:callbacks) ? superclass.callbacks : []
+        c.concat _callbacks.keys
+        c.uniq.sort_by(&:to_s)
+      end
+
       private
 
       def _callbacks

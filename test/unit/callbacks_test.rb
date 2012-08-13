@@ -115,9 +115,11 @@ class CallbacksTest < MiniTest::Unit::TestCase
     from_mod{ record 357 }
   end
   def test_with_module; assert_equal [357], WithMod.run; end
+
+  def test_callbacks_method
+    assert_equal [:base], Base.callbacks
+    assert_equal [:base, :wow], Omg.callbacks
+    assert_equal [:base, :wow], Omg2.callbacks
+    assert_equal [:base, :dude, :sweet, :wow], Sweet.callbacks
+  end
 end
-    def self.run(*args)
-      o= self.new
-      o.run(*args)
-      CallbacksTest::VALUES
-    end
