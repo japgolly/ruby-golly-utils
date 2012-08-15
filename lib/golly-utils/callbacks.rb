@@ -112,6 +112,17 @@ module GollyUtils
       end
       alias :define_callback :define_callbacks
 
+      # Returns a list of all callbacks available to this module. (i.e. defined, inherited, and included.)
+      #
+      # @return [Array<Symbol>] Callback names.
+      def callbacks
+        c= __module_callback_names
+        included_modules.each {|m|
+          c.concat m.callbacks if m.respond_to? :callbacks
+        }
+        c.uniq.sort_by(&:to_s)
+      end
+
       private
       def __add_callbacks_when_included(base)
         base.send :include, Callbacks
@@ -157,6 +168,15 @@ module GollyUtils
         true
       end
       alias :define_callback :define_callbacks
+
+      # Returns a list of all callbacks available to this class. (i.e. defined, inherited, and included.)
+      #
+      # @return [Array<Symbol>] Callback names.
+      def callbacks
+        c= superclass.respond_to?(:callbacks) ? superclass.callbacks : []
+        c.concat _callbacks.keys
+        c.uniq.sort_by(&:to_s)
+      end
 
       private
 
