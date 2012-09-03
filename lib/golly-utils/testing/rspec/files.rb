@@ -186,4 +186,5 @@ module GollyUtils::Testing::RSpecMatchers
   def be_file_with_contents(contents, *extra)
     FileWithContents.new.and(contents).and(extra)
   end
+  alias :be_file_with_content :be_file_with_contents
 end
