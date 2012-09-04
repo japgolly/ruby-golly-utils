@@ -76,7 +76,7 @@ class CallbacksTest < MiniTest::Unit::TestCase
   end
 
   def test_run_callback_with_args
-    Args.new.run_callback :base, 4
+    Args.new.run_callback :base, args: [4]
     assert_equal [9], VALUES
   end
 
@@ -90,6 +90,13 @@ class CallbacksTest < MiniTest::Unit::TestCase
     flunk "Failure expected."
   rescue => e
     assert_match /array/i, e.to_s
+  end
+
+  def test_run_callback_fails_with_unrecognisable_options
+    Args.new.run_callback :base, stuff: [3]
+    flunk "Failure expected."
+  rescue => e
+    assert_match /stuff/, e.to_s
   end
 
   def test_run_callbacks_fails_with_unrecognisable_options
@@ -134,5 +141,34 @@ class CallbacksTest < MiniTest::Unit::TestCase
   end
   def test_callbacks_class_with_module
     assert_equal [:bru, :from_mod], WithMod.callbacks
+  end
+
+  class Context
+    attr_reader :good
+    def make_good; @good= 'good' end
+  end
+  class ContextCallback
+    include GollyUtils::Callbacks
+    define_callback :go
+    go { make_good }
+  end
+  def test_callback_with_context
+    ctx= Context.new
+    cc= ContextCallback.new
+    cc.run_callback :go, context: ctx
+    assert_equal 'good', ctx.good
+  end
+
+  class ContextCallback2 < ContextCallback
+    attr_reader :local_too
+    def hit_local_too; @local_too= 'yes' end
+    go { hit_local_too }
+  end
+  def test_callback_with_context_can_access_local_too
+    ctx= Context.new
+    cc= ContextCallback2.new
+    cc.run_callback :go, context: ctx
+    assert_equal 'good', ctx.good
+    assert_equal 'yes', cc.local_too
   end
 end

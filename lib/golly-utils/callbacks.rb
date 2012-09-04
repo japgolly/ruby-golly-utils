@@ -1,4 +1,5 @@
 require 'golly-utils/ruby_ext/deep_dup'
+require 'golly-utils/delegator'
 
 module GollyUtils
   # A very simple callback mechanism for use within a single class heirarchy.
@@ -214,16 +215,40 @@ module GollyUtils
       # Run all callbacks provided for a single callback point.
       #
       # @param [String, Symbol] callback The callback name.
-      # @param args Arguments to pass to the callbacks.
+      # @param [Hash] options
+      # @option options [Array] args ([]) Arguments to pass to the callbacks.
+      # @option options [nil|Object] context (nil) If provided, code within callbacks will have access to methods
+      #   available from the provided object.
       # @return [true]
       # @raise If the provided callback name hasn't been declared for this class.
+      # @raise If unrecognised or invalid options are provided.
       # @see Callbacks
       # @see ClassMethods#define_callbacks
-      def run_callback(callback, *args)
+      def run_callback(callback, options={})
+
+        # Validate callback name
         name= ::GollyUtils::Callbacks.__norm_callback_key(callback)
         name_verified,callback_procs = self.class.send :_get_callback_procs, name
         raise "There is no callback defined with name #{name}." unless name_verified
-        callback_procs.each{|cb| cb.call *args }
+
+        # Validate options
+        invalid_options= options.keys - RUN_CALLBACKS_OPTIONS
+        unless invalid_options.empty?
+          raise "Unable to recognise options: #{invalid_options.map(&:inspect).sort}"
+        end
+        args= options[:args] || []
+        raise "The :args option must provide an array. Invalid: #{args}" unless args.is_a?(Array)
+
+        # Run callback
+        callback_procs.each{|cb|
+          if ctx= options[:context]
+            dlg= GollyUtils::Delegator.new self, ctx, delegate_to: :first, allow_protected: true
+            dlg.instance_eval &cb
+          else
+            cb.call *args
+          end
+        }
+
         true
       end
 
@@ -233,32 +258,26 @@ module GollyUtils
       #   @param [Array<String, Symbol>] callbacks The callback name(s).
       #   @param [Hash] options
       #   @option options [Array] args ([]) Arguments to pass to the callbacks.
+      #   @option options [nil|Object] context (nil) If provided, code within callbacks will have access to methods
+      #     available from the provided object.
       # @return [true]
       # @raise If one of the provided callback names hasn't been declared for this class.
-      # @raise If unrecognised options are provided.
+      # @raise If unrecognised or invalid options are provided.
       # @see Callbacks
       # @see ClassMethods#define_callbacks
       def run_callbacks(*callbacks)
-        # Parse options
         options= callbacks.last.is_a?(Hash) ? callbacks.pop : {}
-        invalid_options= options.keys - RUN_CALLBACKS_OPTIONS
-        unless invalid_options.empty?
-          raise "Unable to recognise options: #{invalid_options.map(&:inspect).sort}"
-        end
-
-        # Validate options
-        args= options[:args] || []
-        raise "The :args option must provide an array. Invalid: #{args}" unless args.is_a?(Array)
 
         # Run callbacks
         callbacks.each do |callback|
-          run_callback callback, *args
+          run_callback callback, options
         end
+
         true
       end
 
       # @!visibility private
-      RUN_CALLBACKS_OPTIONS= [:args].freeze
+      RUN_CALLBACKS_OPTIONS= [:args, :context].freeze
 
     end
   end
