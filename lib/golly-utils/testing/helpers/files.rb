@@ -13,16 +13,21 @@ module GollyUtils::Testing::Helpers
   #                       # Empty directory now removed
   #   puts Dir.pwd        # => /home/david/my_project
   #
-  # @overload inside_empty_dir(&block)
+  # @param [nil|String] dir_name If not `nil`, then the empty directory name will be set to the provided value.
+  # @overload inside_empty_dir(dir_name = nil, &block)
   #   When a block is given, after yielding, the current directory is restored and the temp directory deleted.
   #   @yieldparam [String] dir The newly-created temp dir.
   #   @return The result of yielding.
-  # @overload inside_empty_dir
+  # @overload inside_empty_dir(dir_name = nil)
   #   When no block is given the current directory is *not* restored and the temp directory *not* deleted.
   #   @return [String] The newly-created temp dir.
-  def inside_empty_dir
+  def inside_empty_dir(dir_name=nil)
     if block_given?
       Dir.mktmpdir {|dir|
+        if dir_name
+          dir= File.join dir, dir_name
+          Dir.mkdir dir
+        end
         Dir.chdir(dir) {
           (@tmp_dir_stack ||= [])<< :inside_empty_dir
           begin
@@ -36,6 +41,10 @@ module GollyUtils::Testing::Helpers
       x= {}
       x[:old_dir]= Dir.pwd
       x[:tmp_dir]= Dir.mktmpdir
+      if dir_name
+        x[:tmp_dir]= File.join x[:tmp_dir], dir_name
+        Dir.mkdir x[:tmp_dir]
+      end
       Dir.chdir x[:tmp_dir]
       (@tmp_dir_stack ||= [])<< x
       x[:tmp_dir]

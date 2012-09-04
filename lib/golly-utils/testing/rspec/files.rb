@@ -7,11 +7,12 @@ module GollyUtils::Testing::Helpers::ClassMethods
   #
   # Old directories are deleted at the end of each example, and the original current-directory restored.
   #
+  # @param [nil|String] dir_name If not `nil`, then the empty directory name will be set to the provided value.
   # @return [void]
-  def run_each_in_empty_dir
+  def run_each_in_empty_dir(dir_name=nil)
     eval <<-EOB
       around :each do |ex|
-        inside_empty_dir{ ex.run }
+        inside_empty_dir(#{dir_name.inspect}){ ex.run }
       end
     EOB
   end
@@ -19,12 +20,13 @@ module GollyUtils::Testing::Helpers::ClassMethods
   # Runs each RSpec example in a new, empty directory unless the context has already put it in one (for example, via
   # {#run_all_in_empty_dir}).
   #
+  # @param [nil|String] dir_name If not `nil`, then the empty directory name will be set to the provided value.
   # @return [void]
   # @see #in_tmp_dir?
-  def run_each_in_empty_dir_unless_in_one_already
+  def run_each_in_empty_dir_unless_in_one_already(dir_name=nil)
     eval <<-EOB
       around :each do |ex|
-        in_tmp_dir? ? ex.run : inside_empty_dir{ ex.run }
+        in_tmp_dir? ? ex.run : inside_empty_dir(#{dir_name.inspect}){ ex.run }
       end
     EOB
   end
@@ -34,8 +36,9 @@ module GollyUtils::Testing::Helpers::ClassMethods
   #
   # The directory is deleted after all examples have run, and the original current-directory restored.
   #
+  # @param [nil|String] dir_name If not `nil`, then the empty directory name will be set to the provided value.
   # @return [void]
-  def run_all_in_empty_dir(&block)
+  def run_all_in_empty_dir(dir_name=nil, &block)
     block ||= Proc.new{}
     @@around_all_in_empty_dir_count ||= 0
     @@around_all_in_empty_dir_count += 1
@@ -43,7 +46,7 @@ module GollyUtils::Testing::Helpers::ClassMethods
     SELF.class_variable_set block_name, block
     eval <<-EOB
       before(:all){
-        inside_empty_dir
+        inside_empty_dir(#{dir_name.inspect})
         block= ::#{SELF}.class_variable_get(:"#{block_name}")
         instance_exec &block
       }

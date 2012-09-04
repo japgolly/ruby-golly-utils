@@ -6,14 +6,24 @@ TMP_TEST_FILE= '.rubbish.tmp'
 
 describe 'RSpec helpers' do
   describe '#run_each_in_empty_dir' do
-    run_each_in_empty_dir
-    def test
-      get_files.should be_empty
-      File.write 'hehe', 'hehe'
-      get_files.should_not be_empty
+
+    context "with no args" do
+      run_each_in_empty_dir
+      def test
+        get_files.should be_empty
+        File.write 'hehe', 'hehe'
+        get_files.should_not be_empty
+      end
+      it("should provide each example with an empty directory (1/2)"){ test }
+      it("should provide each example with an empty directory (2/2)"){ test }
     end
-    it("should provide each example with an empty directory (1/2)"){ test }
-    it("should provide each example with an empty directory (2/2)"){ test }
+
+    context "with name" do
+      run_each_in_empty_dir 'good'
+      it("should provide a directory with the specified name"){
+        File.basename(Dir.pwd).should == 'good'
+      }
+    end
   end
 
   describe '#run_all_in_empty_dir' do
@@ -44,6 +54,13 @@ describe 'RSpec helpers' do
       end
       it("should provide and reuse an empty directory for all examples (1/2)"){ test }
       it("should provide and reuse an empty directory for all examples (2/2)"){ test }
+    end
+
+    context "with name" do
+      run_all_in_empty_dir 'good'
+      it("should provide a directory with the specified name"){
+        File.basename(Dir.pwd).should == 'good'
+      }
     end
   end
 
