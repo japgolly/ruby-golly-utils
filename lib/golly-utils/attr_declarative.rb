@@ -8,6 +8,8 @@ module GollyUtils
   #
   #    i.e. if an attribute is read before a value has been specified, then an error will be thrown.
   #
+  # Attributes ending in `?` or `!` will have said suffix removed in the instance variable, and writer method names.
+  #
   # @example
   #   require 'golly-utils/attr_declarative'
   #
@@ -45,6 +47,20 @@ module GollyUtils
   #   p = BluePlugin.new
   #   puts p.name        # => RuntimeError: Attribute 'name' required by Plugin but not set in BluePlugin.
   #
+  # @example Attibutes with special naming rules
+  #   class SpecialNames
+  #     attr_declarative :happy?
+  #     attr_declarative :my_fist!
+  #
+  #     happy?   false               # Class-level declaration includes suffix
+  #     my_fist! :its_amazing        # Class-level declaration includes suffix
+  #   end
+  #
+  #   puts SpecialNames.new.happy?   # Instance method includes suffix
+  #   puts SpecialNames.new.my_fist! # Instance method includes suffix
+  #
+  #   SpecialNames.new.happy= false  # Instance-level declaration replaces suffix with =
+  #   SpecialNames.new.my_fist= nil  # Instance-level declaration replaces suffix with =
   module AttrDeclarative
 
     # @!visibility private
@@ -91,24 +107,29 @@ module GollyUtils
       # Create attributes
       names.each do |name|
         raise "Invalid attribute name: #{name.inspect}" unless name.is_a?(String) or name.is_a?(Symbol)
-        dvar= "@__gu_attr_decl_#{name}_default"
+        safe_name= name.to_s.sub /[!?]$/, ''
+        dvar= "@__gu_attr_decl_#{safe_name}_default"
+        ivar= "@#{safe_name}"
+        meth_w= "#{safe_name}="
+        meth_r= name
+
         class_eval <<-EOB
 
-          def #{name}=(value)
-            @#{name} = value
+          def #{meth_w}(value)
+            #{ivar} = value
           end
 
-          def #{name}
-            if instance_variable_defined? :@#{name}
-              @#{name}
+          def #{meth_r}
+            if instance_variable_defined? :#{ivar}
+              #{ivar}
             elsif d= ::GollyUtils::AttrDeclarative.get_default(:#{dvar}, self.class)
-              @#{name}= d
+              #{ivar}= d
             else
               #{required ? %[raise "Attribute '#{name}' required by #{self} but not set in #\{self.class}."] : 'nil'}
             end
           end
 
-          def self.#{name}(value)
+          def self.#{meth_r}(value)
             instance_variable_set :#{dvar}, value
           end
 

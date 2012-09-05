@@ -8,6 +8,8 @@ class AttrDeclarativeTest < MiniTest::Unit::TestCase
     attr_declarative :cow
     attr_declarative :horse, :horse2, default: 246
     attr_declarative :important, required: true
+    attr_declarative :boolean_style?
+    attr_declarative :bang_style!
   end
 
   def test_acts_like_attribute
@@ -24,6 +26,33 @@ class AttrDeclarativeTest < MiniTest::Unit::TestCase
     a.horse= 'hehe'
     assert_equal 'hehe', a.horse
     assert_equal 246, a.horse2
+  end
+
+  def test_boolean_style_attribute
+    a= Abc.new
+    a.boolean_style= true
+    assert_equal true, a.boolean_style?
+    a.boolean_style= false
+    assert_equal false, a.boolean_style?
+    refute a.respond_to? :boolean_style # reader has ?, writer has =
+  end
+
+  def test_bang_style_attribute
+    a= Abc.new
+    a.bang_style= 123
+    assert_equal 123, a.bang_style!
+    refute a.respond_to? :bang_style # reader has !, writer has =
+  end
+
+  class SpecialNames < Abc
+    boolean_style? true
+    bang_style! 987
+  end
+  def test_boolean_style_declared_at_class_level
+    assert_equal true, SpecialNames.new.boolean_style?
+  end
+  def test_bang_style_declared_at_class_level
+    assert_equal 987, SpecialNames.new.bang_style!
   end
 
   class Abc2 < Abc
