@@ -250,6 +250,22 @@ describe 'RSpec matchers' do
         TMP_TEST_FILE.should be_file_with_contents //
       }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
     }
+    it("should normalise file content"){
+      File.write TMP_TEST_FILE, "hehe"
+      TMP_TEST_FILE.should be_file_with_contents("HEHE").when_normalised_with(&:upcase)
+    }
+    it("should normalise expectations"){
+      File.write TMP_TEST_FILE, "HEHE"
+      TMP_TEST_FILE.should be_file_with_contents("hehe").when_normalised_with(&:upcase)
+    }
+    it("should not try to normalise regex"){
+      File.write TMP_TEST_FILE, "hehe"
+      TMP_TEST_FILE.should be_file_with_contents(/EH/).when_normalised_with(&:upcase)
+    }
+    it("should change the meaning of and() when specifying normalisation"){
+      File.write TMP_TEST_FILE, "hehe\n"
+      TMP_TEST_FILE.should be_file_with_contents('HEHE').when_normalised_with(&:upcase).and(&:chomp)
+    }
 
   end
 end

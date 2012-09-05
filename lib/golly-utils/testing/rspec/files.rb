@@ -151,6 +151,7 @@ module GollyUtils::Testing::RSpecMatchers
   class FileWithContents
     def initialize
       @contents= []
+      @normalisation_fns= []
     end
 
     def and(contents)
@@ -158,11 +159,28 @@ module GollyUtils::Testing::RSpecMatchers
       self
     end
 
+    def _and_normalisation_fn(&fn)
+      @normalisation_fns<< fn
+      self
+    end
+
+    def when_normalised_with(&fn)
+      instance_eval 'alias :and :_and_normalisation_fn'
+      self.and &fn
+    end
+    alias :when_normalized_with :when_normalised_with
+
     def matches?(file)
       @contents= @contents.flatten.uniq
       file.should ExistAsFile.new
       @filename= file
       @file_content= File.read(file)
+
+      @normalisation_fns.each do |fn|
+        @file_content= fn.(@file_content)
+        @contents.map! {|c| c.is_a?(String) ? fn.(c) : c}
+      end
+
       @failures= []
       #@contents.all? {|c| c === @file_content }
       @contents.each {|c| @failures<< c unless c === @file_content }
@@ -184,8 +202,22 @@ module GollyUtils::Testing::RSpecMatchers
   # Checks that a file exists and has expected content.
   #
   # @example
-  #   'Gemfile'.should be_file_with_contents(/['"]rspec['"]/).and(/['"]golly-utils['"]/)
+  #   # Specify a single string to for a straight 1:1 comparison.
   #   'version.txt'.should be_file_with_contents "2\n"
+  #
+  #   # Use regex and the and() method to add multiple expectations
+  #   'Gemfile'.should be_file_with_contents(/['"]rspec['"]/).and(/['"]golly-utils['"]/)
+  #
+  # @example With normalisation
+  #   # You can specify functions to normalise both the file and expectation.
+  #   'version.txt'.should be_file_with_contents("2").when_normalised_with(&:chomp)
+  #
+  #   # You can add multiple normalisation functions by specifying and() after the first
+  #   'stuff.txt'.should be_file_with_contents(/ABC/)
+  #                      .and(/DEF/)
+  #                      .and(/123\n/)
+  #                      .when_normalised_with(&:upcase)
+  #                      .and(&:chomp)
   def be_file_with_contents(contents, *extra)
     FileWithContents.new.and(contents).and(extra)
   end
