@@ -6,6 +6,7 @@ Golly's Utils: Changelog
 WIP
 
 #### Added
+* Added {Kernel#at_exit_preserving_exit_status}.
 * {GollyUtils::Singleton Singleton} module.
 * Added new {GollyUtils::Delegator Delegator} option: `:allow_protected`
 * {GollyUtils::Callbacks Callbacks} can now be defined in modules.
