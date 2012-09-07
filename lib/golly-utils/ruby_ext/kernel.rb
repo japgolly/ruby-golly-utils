@@ -9,9 +9,9 @@ module Kernel
   # @return [Proc] Whatever `at_exit` returns.
   def at_exit_preserving_exit_status(&block)
     at_exit {
-      status= $!.respond_to?(:status) ? $!.status : 0
+      status= $!.is_a?(::SystemExit) ? $!.status : nil
       block.()
-      exit status
+      exit status if status
     }
   end
 end
