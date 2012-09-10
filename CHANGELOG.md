@@ -6,6 +6,7 @@ Golly's Utils: Changelog
 WIP
 
 #### Added
+* Added {GollyUtils::Testing::DynamicFixtures}.
 * Added {Hash#validate_keys} and {Hash#validate_option_keys}.
 * Added {Kernel#at_exit_preserving_exit_status}.
 * {GollyUtils::Singleton Singleton} module.
