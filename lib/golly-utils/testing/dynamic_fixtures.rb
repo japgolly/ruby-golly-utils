@@ -185,23 +185,30 @@ module GollyUtils
           # df[:lock].synchronize {
             if df[:block]
 
-              # Create dynamic fixture
+              # Start creating dynamic fixture
               before_dynamic_fixture_creation name
               dir= "#{dynamic_fixture_root}/#{name}"
-              start_time= Time.now # start after dynamic_fixture_root()
-
               Dir.mkdir dir
+
               if subdir= df[:dir_name]
                 dir+= "/#{subdir}"
                 Dir.mkdir dir
               end
 
-              Dir.chdir(dir){ instance_eval &df[:block] }
+              start_time_stack= (Thread.current[:gu_dynamic_fixture_start_times] ||= [])
+              start_time_stack<< Time.now
+              begin
+                # Create fixture
+                Dir.chdir(dir){ instance_eval &df[:block] }
+                df.delete :block
+                df[:dir]= dir
 
-              df.delete :block
-              df[:dir]= dir
-              end_time= Time.now
-              after_dynamic_fixture_creation name, end_time-start_time
+                dur= Time.now - start_time_stack.last
+                start_time_stack.map!{|t| t + dur}
+                after_dynamic_fixture_creation name, dur
+              ensure
+                start_time_stack.pop
+              end
 
             end
           }
