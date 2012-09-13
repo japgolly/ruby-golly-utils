@@ -67,8 +67,8 @@ module GollyUtils
         # RSpec helper that directs that each example be run in it's own clean copy of a given dynamic fixture.
         #
         # @param [Symbol|String] name The dynamic fixture name.
-        # @param [Hash] options
-        # @option options [nil|String] :cd_into (nil) A fixture subdirectory to change directory into before yielding.
+        # @param [Hash] options Options to pass to {DynamicFixtures#inside_dynamic_fixture}. See that method for option
+        #   details.
         # @return [void]
         # @see DynamicFixtures#inside_dynamic_fixture
         def run_each_in_dynamic_fixture(name, options={})
@@ -82,6 +82,37 @@ module GollyUtils
           EOB
 
           nil
+        end
+
+        # RSpec helper that directs that all examples be run in the same (initially-clean) copy of a given dynamic
+        # fixture.
+        #
+        # @param [Symbol|String] name The dynamic fixture name.
+        # @param [Hash] options
+        # @option options [nil|String] :dir_name (nil) A specific name to call the empty directory basename.
+        # @option options [nil|String] :cd_into (nil) A fixture subdirectory to change directory into when running
+        #   examples.
+        # @yield Invokes the given block (if one given) once before any examples run, inside the empty dir, to perform
+        #   any additional initialisation required.
+        # @return [void]
+        # @see GollyUtils::Testing::Helpers::ClassMethods#run_all_in_empty_dir
+        def run_all_in_dynamic_fixture(name, options={}, &block)
+          options.validate_option_keys :cd_into, :dir_name
+
+          require 'golly-utils/testing/rspec/files'
+          name= DynamicFixtures.normalise_dynfix_name(name) # actually just wanted dup
+          run_all_in_empty_dir(options[:dir_name]) {
+            copy_dynamic_fixture name
+            block.() if block
+          }
+
+          if cd_into= options[:cd_into]
+            class_eval <<-EOB
+              around(:each){|ex|
+                Dir.chdir(#{cd_into.inspect}){ ex.run }
+              }
+            EOB
+          end
         end
 
       end

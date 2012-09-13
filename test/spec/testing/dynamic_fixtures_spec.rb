@@ -69,6 +69,14 @@ describe GollyUtils::Testing::DynamicFixtures do
 
   #---------------------------------------------------------------------------------------------------------------------
 
+  shared_examples :cd_with_aa do
+    it("runs examples in the specified fixture subdirectory"){
+      'abc'.should exist_as_file
+    }
+    it("provides the full fixture"){
+      '../a_parent'.should exist_as_file
+    }
+  end
 
   describe '#run_each_in_dynamic_fixture' do
 
@@ -84,12 +92,39 @@ describe GollyUtils::Testing::DynamicFixtures do
 
     context "when :cd_into specified" do
       run_each_in_dynamic_fixture :a, cd_into: 'aa'
-      it("runs examples in the specified fixture subdirectory"){
-        'abc'.should exist_as_file
+      include_examples :cd_with_aa
+    end
+  end
+
+  #---------------------------------------------------------------------------------------------------------------------
+
+  describe '#run_all_in_dynamic_fixture' do
+
+    context "when only fixture name specified" do
+      run_all_in_dynamic_fixture(:a){
+        File.write 'init.called', '1'
+        $ffs= 0
       }
-      it("provides the full fixture"){
-        '../a_parent'.should exist_as_file
-      }
+      def test
+        'aa/abc'.should exist_as_file
+        if $ffs == 0
+          # Test 1
+          'dirty'.should_not exist_as_file
+          File.write 'dirty', '1'
+          $ffs += 1
+        else
+          # Test 2
+          'dirty'.should exist_as_file
+        end
+      end
+      it("reuses the same fixture for all examples (1/2)"){ test }
+      it("reuses the same fixture for all examples (2/2)"){ test }
+      it("calls the init block given"){ 'init.called'.should exist_as_file }
+    end
+
+    context "when :cd_into specified" do
+      run_all_in_dynamic_fixture :a, cd_into: 'aa'
+      include_examples :cd_with_aa
     end
   end
 

@@ -37,6 +37,8 @@ module GollyUtils::Testing::Helpers::ClassMethods
   # The directory is deleted after all examples have run, and the original current-directory restored.
   #
   # @param [nil|String] dir_name If not `nil`, then the empty directory name will be set to the provided value.
+  # @yield Invokes the given block (if one given) once before any examples run, inside the empty dir, to perform any
+  #   additional initialisation required.
   # @return [void]
   def run_all_in_empty_dir(dir_name=nil, &block)
     block ||= Proc.new{}
