@@ -58,9 +58,9 @@ module GollyUtils::Testing::Helpers::ClassMethods
 
 end
 
-module GollyUtils::Testing::RSpecMatchers
+#-----------------------------------------------------------------------------------------------------------------------
 
-  #-----------------------------------------------------------------------------------------------------------------
+module GollyUtils::Testing::RSpecMatchers
 
   # @!visibility private
   class ExistAsFile
@@ -104,7 +104,7 @@ module GollyUtils::Testing::RSpecMatchers
   end
   alias :exist_as_file :exist_as_a_file
 
-  #-----------------------------------------------------------------------------------------------------------------
+  #---------------------------------------------------------------------------------------------------------------------
 
   # @!visibility private
   class ExistAsDir
@@ -146,18 +146,23 @@ module GollyUtils::Testing::RSpecMatchers
   end
   alias :exist_as_dir :exist_as_a_dir
 
-
-  #-----------------------------------------------------------------------------------------------------------------
+  #---------------------------------------------------------------------------------------------------------------------
 
   # @!visibility private
   class FileWithContents
     def initialize
       @contents= []
+      @not_contents= []
       @normalisation_fns= []
     end
 
-    def and(contents)
-      @contents<< contents
+    def and(c1,*cn)
+      @contents.concat [c1]+cn
+      self
+    end
+
+    def and_not(c1,*cn)
+      @not_contents.concat [c1]+cn
       self
     end
 
@@ -167,37 +172,64 @@ module GollyUtils::Testing::RSpecMatchers
     end
 
     def when_normalised_with(&fn)
-      instance_eval 'alias :and :_and_normalisation_fn'
+      instance_eval <<-EOB
+        alias :and :_and_normalisation_fn
+        def and_not(*) raise "and_not() cannot be called after when_normalised_with()." end
+      EOB
       self.and &fn
     end
     alias :when_normalized_with :when_normalised_with
 
     def matches?(file)
-      @contents= @contents.flatten.uniq
+      @contents= @contents.flatten.compact.uniq
+      @not_contents= @not_contents.flatten.compact.uniq
       file.should ExistAsFile.new
       @filename= file
       @file_content= File.read(file)
 
       @normalisation_fns.each do |fn|
         @file_content= fn.(@file_content)
-        @contents.map! {|c| c.is_a?(String) ? fn.(c) : c}
+        @contents.map!     {|c| c.is_a?(String) ? fn.(c) : c}
+        @not_contents.map! {|c| c.is_a?(String) ? fn.(c) : c}
       end
 
       @failures= []
-      #@contents.all? {|c| c === @file_content }
-      @contents.each {|c| @failures<< c unless c === @file_content }
-      @failures.empty?
+      @not_failures= []
+      @contents.each     {|c| @failures<< c unless c === @file_content }
+      @not_contents.each {|c| @not_failures<< c if c === @file_content }
+
+      @failures.empty? and @not_failures.empty?
     end
 
     def failure_message_for_should
-      "expected that '#@filename' would have expected content.\n" +
-      @failures.map{|f| "Expected: #{f.inspect}" }.join("\n") +
-      "\n  Actual: #{@file_content.inspect}"
+      if !@failures.empty?
+        expected_msg @failures
+      else
+        unexpected_msg @not_failures
+      end
     end
 
     def failure_message_for_should_not
-      "expected that '#@filename' would not have expected content.\n" +
-      (@contents - @failures).map{|f| "Unexpected: #{f.inspect}" }.join("\n")
+      inv= @contents - @failures
+      if !inv.empty?
+        unexpected_msg inv
+      else
+        expected_msg @not_contents - @not_failures
+      end
+    end
+
+    private
+
+    def expected_msg(expected)
+      "expected that '#@filename' would have certain content.\n" \
+        + expected.map{|f| "      Expected: #{f.inspect}" }.join("\n") \
+        + "\nActual Content: #{@file_content.inspect}"
+    end
+
+    def unexpected_msg(unexpected)
+      "expected that '#@filename' would not have certain content.\n" \
+        + unexpected.map{|f| "Unexpected: #{f.inspect}" }.join("\n") \
+        + "\nActual Content: #{@file_content.inspect}"
     end
   end
 
@@ -209,6 +241,9 @@ module GollyUtils::Testing::RSpecMatchers
   #
   #   # Use regex and the and() method to add multiple expectations
   #   'Gemfile'.should be_file_with_contents(/['"]rspec['"]/).and(/['"]golly-utils['"]/)
+  #
+  #   # Negative checks can be added too
+  #   'Gemfile'.should be_file_with_contents(/gemspec/).and_not(/rubygems/)
   #
   # @example With normalisation
   #   # You can specify functions to normalise both the file and expectation.

@@ -210,7 +210,16 @@ describe 'RSpec matchers' do
   end
 
   describe '#be_file_with_contents' do
-    run_all_in_empty_dir
+    run_all_in_empty_dir {
+      File.write 'f1', 'abc123'
+    }
+
+    def expect_failure(*args)
+      expect{
+        TMP_TEST_FILE.should *args
+      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    end
+
     it("should pass if file contents match string"){
       File.write TMP_TEST_FILE, "hehe\n"
       TMP_TEST_FILE.should be_file_with_contents "hehe\n"
@@ -225,30 +234,20 @@ describe 'RSpec matchers' do
     }
     it("should fail if file contents dont match regex"){
       File.write TMP_TEST_FILE, 'omg man 123'
-      expect{
-        TMP_TEST_FILE.should be_file_with_contents /mann/
-      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+      expect_failure be_file_with_contents /mann/
     }
     it("should fail if file contents dont match string"){
       File.write TMP_TEST_FILE, 'omg man 123'
-      expect{
-        TMP_TEST_FILE.should be_file_with_contents 'what'
-      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+      expect_failure be_file_with_contents 'what'
     }
     it("should fail if file contents fail one of multiple expections"){
       File.write TMP_TEST_FILE, 'omg man 123'
-      expect{
-        TMP_TEST_FILE.should be_file_with_contents(/^omg/).and(/1234/)
-      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
-      expect{
-        TMP_TEST_FILE.should be_file_with_contents(/^omgx/).and(/123/)
-      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+      expect_failure be_file_with_contents(/^omg/).and(/1234/)
+      expect_failure be_file_with_contents(/^omgx/).and(/123/)
     }
     it("should fail if file doesn't exist"){
       File.delete TMP_TEST_FILE if File.exists? TMP_TEST_FILE
-      expect{
-        TMP_TEST_FILE.should be_file_with_contents //
-      }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+      expect_failure be_file_with_contents //
     }
     it("should normalise file content"){
       File.write TMP_TEST_FILE, "hehe"
@@ -266,6 +265,36 @@ describe 'RSpec matchers' do
       File.write TMP_TEST_FILE, "hehe\n"
       TMP_TEST_FILE.should be_file_with_contents('HEHE').when_normalised_with(&:upcase).and(&:chomp)
     }
+    it("should fail if file contents match arg provided by and_not()"){
+      File.write TMP_TEST_FILE, "abc123\n"
+      TMP_TEST_FILE.should be_file_with_contents(/abc/).and_not /wtf/,/man/
+      expect_failure be_file_with_contents(/abc/).and_not /123/
+    }
+    it("should fail if file contents match anything provided by and_not()"){
+      File.write TMP_TEST_FILE, "abc123\n"
+      expect_failure be_file_with_contents(/abc/).and_not /123/,/man/
+      expect_failure be_file_with_contents(/abc/).and_not /wtf/,/123/
+    }
+
+    context "failure message" do
+      before(:all){ File.write 'f1', 'abc123' }
+
+      it("failure msg describes what's missing"){
+        expect{ 'f1'.should be_file_with_contents /456/ }.to raise_error /would have/
+        expect{ 'f1'.should be_file_with_contents /456/ }.to raise_error /Expected:.*456/
+      }
+      it("failure msg excludes what's matching"){
+        expect{ 'f1'.should be_file_with_contents /[a-z]/,/456/ }.to raise_error /\A[^z]+\z/
+      }
+      it("failure msg describes what wasn't expected to match"){
+        expect{ 'f1'.should be_file_with_contents(/abc/).and_not /123/ }.to raise_error /would not have/
+        expect{ 'f1'.should be_file_with_contents(/abc/).and_not /123/ }.to raise_error /Unexpected:.*123/
+      }
+      it("negative failure msg describes what's matching"){
+        expect{ 'f1'.should_not be_file_with_contents /123/ }.to raise_error /would not have/
+        expect{ 'f1'.should_not be_file_with_contents /123/ }.to raise_error /Unexpected:.*123/
+      }
+    end
 
   end
 end
