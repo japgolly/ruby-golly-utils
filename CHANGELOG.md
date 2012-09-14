@@ -6,6 +6,7 @@ Golly's Utils: Changelog
 WIP
 
 #### Added
+* Added {Object#superclasses}.
 * Added {GollyUtils::Testing::DynamicFixtures}.
 * Added {Hash#validate_keys} and {Hash#validate_option_keys}.
 * Added {Kernel#at_exit_preserving_exit_status}.
@@ -44,6 +45,7 @@ WIP
 * Renamed dir: `golly-utils/test/spec` => `golly-utils/testing/rpsec`.
 * Renamed module: `GollyUtils::TestHelpers` => `GollyUtils::Testing::Helpers`
 * Renamed module: `GollyUtils::DeferrableSpecs` => `GollyUtils::Testing::DeferrableSpecs`
+* Renamed `golly-utils/ruby_ext/subclasses.rb` => `golly-utils/ruby_ext/classes_and_types.rb`
 
 ## 0.0.1 (2012-07-16)
 

@@ -33,3 +33,22 @@ class Class
     classes
   end
 end
+
+class Object
+  # Returns the class hierarchy of a given instance or class.
+  #
+  # @example
+  #   Fixnum.superclasses  # <= [Fixnum, Integer, Numeric, Object, BasicObject]
+  #   100.superclasses     # <= [Fixnum, Integer, Numeric, Object, BasicObject]
+  #
+  # @return [Array<Class>] An array of classes starting with the current class, descending to `BasicObject`.
+  def superclasses
+    if self == BasicObject
+      [self]
+    elsif self.is_a? Class
+      [self] + self.superclass.superclasses
+    else
+      self.class.superclasses
+    end
+  end
+end
