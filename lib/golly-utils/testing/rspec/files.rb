@@ -1,5 +1,5 @@
 require 'golly-utils/testing/rspec/base'
-require 'golly-utils/testing/helpers/files'
+require 'golly-utils/testing/file_helpers'
 
 module GollyUtils::Testing::Helpers::ClassMethods
 

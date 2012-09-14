@@ -1,4 +1,4 @@
-require 'golly-utils/testing/helpers/base'
+require 'golly-utils/testing/helpers_base'
 
 module GollyUtils::Testing::RSpecMatchers
 end
