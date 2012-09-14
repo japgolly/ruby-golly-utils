@@ -1,9 +1,7 @@
-require 'corvid/guard'
+require 'corvid/builtin/guard'
+rspec_options= read_rspec_options(File.dirname __FILE__)
 
-# TODO move to corvid: vim swap & guard
-# Ignore Vim swap files
-ignore /~$/
-ignore /^(?:.*[\\\/])?\.[^\\\/]+\.sw[p-z]$/
+ignore VIM_SWAP_FILES
 
 ########################################################################################################################
 # test/unit
