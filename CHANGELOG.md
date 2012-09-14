@@ -6,6 +6,7 @@ Golly's Utils: Changelog
 WIP
 
 #### Added
+* Added {Object#validate_type!} and {Symbol#validate_lvar_type!}.
 * Added {Object#superclasses}.
 * Added {GollyUtils::Testing::DynamicFixtures}.
 * Added {Hash#validate_keys} and {Hash#validate_option_keys}.

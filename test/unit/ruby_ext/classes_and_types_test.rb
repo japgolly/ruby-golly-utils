@@ -22,6 +22,8 @@ class ClassesAndTypesTest < MiniTest::Unit::TestCase
     assert_arrays [C,B1,B2], A.subclasses
   end
 
+  #---------------------------------------------------------------------------------------------------------------------
+
   def test_superclasses_on_instance
     assert_equal [B1,B,A,Object,BasicObject], B1.new.superclasses
   end
@@ -39,5 +41,63 @@ class ClassesAndTypesTest < MiniTest::Unit::TestCase
   def test_superclasses_on_basic_object_subclass
     assert_equal [BO,BasicObject], BO.superclasses
     #assert_equal [BO,BasicObject], BO.new.superclasses
+  end
+
+  #---------------------------------------------------------------------------------------------------------------------
+
+  def test_validate_type_passes_when_exact_match
+    B.new.validate_type! B
+    B.new.validate_type! A
+  end
+
+  def test_validate_type_passes_with_name
+    B.new.validate_type! 'hehe', B
+    B.new.validate_type! :hehe, A
+  end
+
+  def test_validate_type_passes_when_any_match
+    B.new.validate_type! B, String
+    B.new.validate_type! String, A
+  end
+
+  def test_validate_type_allows_primatives
+    true.validate_type! true
+    false.validate_type! false
+    nil.validate_type! nil
+    nil.validate_type! NilClass
+    nil.validate_type! nil, B
+  end
+
+  def test_validate_type_fail
+    assert_raises(TypeValidationError){ B.new.validate_type! String }
+  end
+
+  def test_validate_type_fail_with_name
+    assert_raises(TypeValidationError){ B.new.validate_type! 'hehe', String }
+    assert_raises(TypeValidationError){ B.new.validate_type! :hehe, String }
+  end
+
+  def test_validate_type_fail_uses_name_in_errmsg
+    3.validate_type! 'hehe', String
+    raise "Error expected."
+  rescue => e
+    assert_match /for hehe/, e.to_s
+  end
+
+  #---------------------------------------------------------------------------------------------------------------------
+
+  def test_validate_lvar_type!
+    hehe= 123
+    :hehe.validate_lvar_type!{ Fixnum }
+    :hehe.validate_lvar_type!{ [nil,Fixnum] }
+    assert_raises(TypeValidationError){ :hehe.validate_lvar_type!{ String }}
+  end
+
+  def test_validate_lvar_type_uses_name_in_errmsg
+    hehe= 'no'
+    :hehe.validate_lvar_type!{ Fixnum }
+    raise "Error expected."
+  rescue => e
+    assert_match /for hehe/, e.to_s
   end
 end
