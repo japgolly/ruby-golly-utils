@@ -10,3 +10,7 @@ group :doc do
   gem 'kramdown', platforms: :jruby
 end
 
+group :test do
+  gem 'guard', '>= 1.3.2', require: false
+  gem 'listen', '~> 0.4.7', require: false
+end
