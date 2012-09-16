@@ -27,7 +27,6 @@ end if Dir.exists?('test/unit')
 ########################################################################################################################
 # test/spec
 
-rspec_options= read_rspec_options(File.dirname __FILE__)
 group :spec do
   guard 'rspec', binstubs: true, spec_paths: ['test/spec'], cli: rspec_options, all_on_start: false, all_after_pass: false do
 
@@ -38,7 +37,7 @@ group :spec do
     watch(%r'^test/spec/.+_spec\.rb$')
 
     # Specific
-    watch('lib/golly-utils/testing/helpers/files.rb') {'test/spec/testing/rspec/files_spec.rb'}
+    watch('lib/golly-utils/testing/file_helpers.rb') {'test/spec/testing/rspec/files_spec.rb'}
 
     if bulk?
       # Test stuff affecting everything
