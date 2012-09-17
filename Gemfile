@@ -11,6 +11,5 @@ group :doc do
 end
 
 group :test do
-  gem 'guard', '>= 1.3.2', require: false
-  gem 'listen', '~> 0.4.7', require: false
+  gem 'rb-inotify', '>= 0.8.8', require: false
 end
