@@ -1,9 +1,9 @@
 Golly's Utils: Changelog
 ========================
 
-## 0.1.0 (WIP)
+## 0.6.0 (2012-09-17)
 
-WIP
+Lots of stuff:
 
 #### Added
 * Added {Object#validate_type!} and {Symbol#validate_lvar_type!}.
