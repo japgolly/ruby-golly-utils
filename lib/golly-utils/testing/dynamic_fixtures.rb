@@ -103,7 +103,7 @@ module GollyUtils
           name= DynamicFixtures.normalise_dynfix_name(name) # actually just wanted dup
           run_all_in_empty_dir(options[:dir_name]) {
             copy_dynamic_fixture name
-            block.() if block
+            instance_eval &block if block
           }
 
           if cd_into= options[:cd_into]

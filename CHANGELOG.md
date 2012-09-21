@@ -1,6 +1,10 @@
 Golly's Utils: Changelog
 ========================
 
+## 0.6.1 (WIP)
+
+* Fixed binding of block run by {GollyUtils::Testing::DynamicFixtures#ClassMethods#run_all_in_dynamic_fixture}.
+
 ## 0.6.0 (2012-09-17)
 
 Lots of stuff:
