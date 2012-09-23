@@ -1,4 +1,5 @@
 require 'golly-utils/ruby_ext/deep_dup'
+require 'golly-utils/ruby_ext/options'
 require 'golly-utils/delegator'
 
 module GollyUtils
@@ -71,6 +72,20 @@ module GollyUtils
   #   stuff_machine DoerOfStuff.new  # => I'll take anything that SupportsStuff.
   #                                  # => Doing stuff!!
   #                                  # => See!
+  #
+  # @example Specifying callback run order
+  #   class X
+  #     on_action{ puts 'That thing happened.' }
+  #   end
+  #
+  #   class Y < X
+  #     on_action(priority: -1){ puts 'FIRST!' }
+  #     on_action(priority:  1){ puts 'Last.' }
+  #   end
+  #
+  #   Y.new.run_callback :on_action                # => FIRST!
+  #                                                # => That thing happened.
+  #                                                # => Last.
   module Callbacks
 
     # @!visibility private
@@ -96,6 +111,15 @@ module GollyUtils
     def self.__norm_callback_key(key)
       key.to_sym
     end
+
+    # List of valid options than can be provided when specifying callback procs.
+    #
+    # * `:priority` - Fixnum that declares the run order of the given proc. Defaults to 0 when option not provided or
+    #   `nil`. A lower number indicates a preference to run earlier; a higher number, later.
+    #
+    #   For example, a callback of priority -5 will run before callbacks with priorities of 0, followed by a callback
+    #   of 10.
+    CALLBACK_PROC_OPTIONS= [:priority].freeze
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -158,11 +182,12 @@ module GollyUtils
             raise "Can't create callback with name '#{name}'. A method with that name already exists."
           end
 
-          _callbacks[name] ||= {}
+          _callbacks[name] ||= []
           class_eval <<-EOB
-            def self.#{name}(&block)
-              v= (_callbacks[#{name.inspect}] ||= {})
-              (v[:procs] ||= [])<< block
+            def self.#{name}(options={}, &block)
+              options.validate_option_keys *#{Callbacks}::CALLBACK_PROC_OPTIONS
+              data= options.deep_dup.merge proc: block
+              (_callbacks[#{name.inspect}] ||= []) << data
             end
           EOB
         end
@@ -185,19 +210,19 @@ module GollyUtils
         @callbacks ||= {}
       end
 
-      def _get_callback_procs(name)
+      def _get_callbacks_for(name)
         name_verified= false
         results= []
 
         # Get local
         if local= _callbacks[name]
           name_verified= true
-          results.concat local[:procs] if local[:procs]
+          results.concat local
         end
 
         # Get inherited
-        if superclass.private_methods.include?(:_get_callback_procs)
-          n,r = superclass.send(:_get_callback_procs,name)
+        if superclass.private_methods.include?(:_get_callbacks_for)
+          n,r = superclass.send(:_get_callbacks_for,name)
           name_verified ||= n
           results.concat r
         end
@@ -216,8 +241,8 @@ module GollyUtils
       #
       # @param [String, Symbol] callback The callback name.
       # @param [Hash] options
-      # @option options [Array] args ([]) Arguments to pass to the callbacks.
-      # @option options [nil|Object] context (nil) If provided, code within callbacks will have access to methods
+      # @option options [Array] :args ([]) Arguments to pass to the callbacks.
+      # @option options [nil|Object] :context (nil) If provided, code within callbacks will have access to methods
       #   available from the provided object.
       # @return [true]
       # @raise If the provided callback name hasn't been declared for this class.
@@ -225,21 +250,21 @@ module GollyUtils
       # @see Callbacks
       # @see ClassMethods#define_callbacks
       def run_callback(callback, options={})
+        options.validate_option_keys :context, :args
 
         # Validate callback name
         name= ::GollyUtils::Callbacks.__norm_callback_key(callback)
-        name_verified,callback_procs = self.class.send :_get_callback_procs, name
+        name_verified,callbacks = self.class.send :_get_callbacks_for, name
         raise "There is no callback defined with name #{name}." unless name_verified
 
         # Validate options
-        invalid_options= options.keys - RUN_CALLBACKS_OPTIONS
-        unless invalid_options.empty?
-          raise "Unable to recognise options: #{invalid_options.map(&:inspect).sort}"
-        end
         args= options[:args] || []
         raise "The :args option must provide an array. Invalid: #{args}" unless args.is_a?(Array)
 
-        # Run callback
+        # Collect procs to run
+        callback_procs= callbacks.sort_by{|d| d[:priority] || 0 }.map{|d| d[:proc] }
+
+        # Run procs provided for callback
         callback_procs.each{|cb|
           if ctx= options[:context]
             dlg= GollyUtils::Delegator.new self, ctx, delegate_to: :first, allow_protected: true
@@ -275,9 +300,6 @@ module GollyUtils
 
         true
       end
-
-      # @!visibility private
-      RUN_CALLBACKS_OPTIONS= [:args, :context].freeze
 
     end
   end

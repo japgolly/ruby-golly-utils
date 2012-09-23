@@ -171,4 +171,12 @@ class CallbacksTest < MiniTest::Unit::TestCase
     assert_equal 'good', ctx.good
     assert_equal 'yes', cc.local_too
   end
+
+  class CallbacksWithPri < Omg1
+    wow(priority: 10){ record 66010 }
+    wow(priority: -10){ record 16 }
+  end
+  def test_callbacks_with_priorities
+    assert_equal [16,1,66010], CallbacksWithPri.run
+  end
 end

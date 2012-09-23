@@ -4,6 +4,7 @@ Golly's Utils: Changelog
 ## 0.6.1 (WIP)
 
 * Fixed binding of block run by {GollyUtils::Testing::DynamicFixtures#ClassMethods#run_all_in_dynamic_fixture}.
+* Added new option `:priority` when providing callbacks that determines callback run order.
 
 ## 0.6.0 (2012-09-17)
 
