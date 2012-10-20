@@ -183,6 +183,7 @@ Validation
 ----------
 
 * Object.validate_type!
+
   ```ruby
   3     .validate_type nil, Numeric
   nil   .validate_type nil, Numeric
