@@ -12,7 +12,7 @@ This is a subset of the available functionality. Browse the Yardoc or code for m
 Callbacks
 ---------
 
-`GollyUtils::Callbacks`: Simple event-and-listener style callbacks with a few bells-and-whistles.
+GollyUtils::Callbacks -- Simple event-and-listener style callbacks with a few bells-and-whistles.
 ```ruby
 class Engine
   include GollyUtils::Callbacks
@@ -33,7 +33,7 @@ HappyEngine.new.run_callback :on_save     # => FIRST!
 Declarative Attributes
 ----------------------
 
-`attr_declarative`: Declarative attributes that avoid typos in subclasses, have default values, and
+attr_declarative -- Declarative attributes that avoid typos in subclasses, have default values, and
 more.
 ```ruby
 class Plugin
@@ -56,33 +56,30 @@ puts p.hobby             # => RuntimeError: Attribute 'hobby' required by Plugin
 Ruby Extension
 --------------
 
-* `Object.deep_dup` with collection-aware implementations for `Array` and `Hash`.
+* `Object.deep_dup` with collection-aware implementations for Array and Hash.
 * Array to Hash conversion
 
   ```ruby
   ['m','abc'].to_hash_keyed_by{ |v| v.length }   # => {1 => 'm', 3 => 'abc}
   [2,5].to_hash_with_values{ |k| 'xo' * k }      # => {2 => 'xoxo', 5 => 'xoxoxoxoxo'}
   ```
-* `Enumerable.frequency_map`
-
+* Enumerable.frequency_map
   ```ruby
   %w[big house big car].frequency_map  # => {"big"=>2, "car"=>1, "house"=>1}
   ```
 * `Kernel.at_exit_preserving_exit_status`
-* `Object.superclasses`
-
+* Object.superclasses
   ```ruby
   Fixnum.superclasses  # <= [Fixnum, Integer, Numeric, Object, BasicObject]
   ```
 * `StandardError.to_pretty_s`
-* `GollyUtils::EnvHelpers`
-
+* GollyUtils::EnvHelpers
   ```ruby
   ENV['debug'] = '1'     # can also be: y, yes, t, true, on, enabled
   ENV.on?('debug')       # <= true
   ENV.enabled?('debug')  # <= true
   ```
-* `GollyUtils::Singleton`: Extends Ruby's `Singleton` module.
+* GollyUtils::Singleton -- Extends Ruby's Singleton module.
   ```ruby
   class Stam1na
     include GollyUtils::Singleton
@@ -185,15 +182,14 @@ Testing
 Validation
 ----------
 
-* `Object.validate_type!`
-
+* Object.validate_type!
   ```ruby
   3     .validate_type nil, Numeric
   nil   .validate_type nil, Numeric
   'What'.validate_type nil, Numeric # <= raises TypeValidationError
   tracer.validate_type! 'the tracer flag', true, false  # Validate boolean with nice err msg
   ```
-* `Symbol.validate_lvar_type!`: Validates local variables without you having to specify the variable
+* Symbol.validate_lvar_type! -- Validates local variables without you having to specify the variable
   value or name in error messages.
   ```ruby
   def save_person(name, eyes)
